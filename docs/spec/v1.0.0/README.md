@@ -119,6 +119,8 @@ docs/spec/v1.0.0/
 - `description` (≤600 字) / `category` / `difficulty` (1-5) / `tags` (≤10) / `conditions`
 - `thumbnail` — **16×16 reference サムネ** (data_uri、≤2KB)
 - `thumbnails_extra` — 32/64/128/256/512 の追加サムネ (任意、最大 5 件)。§7 参照
+- `external_ids` — Steam / PSN / Xbox 等の公式 Achievement ID (§7.6.1)。サイト跨ぎ統合に使う
+- `aliases` — 同じ達成行為を指す他サイト Achievement uid の手動宣言 (§7.6.2)
 - `created_by` (ハンドル名) / `updated_at` / `attribution`
 
 ### 4.2 UserAchievement (ユーザー達成記録)
@@ -312,15 +314,81 @@ function display_title(achievement, user_lang):
 - **`alternates` 配列 / `locale_variants` 等の重厚な国際化** — 達成条件 (conditions) は言語非依存なので、locale 別レコードを増やす必要はない
 - **逆引きインデックス** — 「英語ユーザーが英語タイトルで検索したい」は実装側の検索インフラの責務であり、データ仕様の責務ではない
 
-## 7.6 Achievement の同等性 (aliases)
+## 7.6 Achievement の同等性 (external_ids と aliases)
 
 複数のサイトが「同じ達成行為」について独自に Achievement を定義することは正常な動作。本仕様は `uid` ベースで識別するため、A 社の `a-corp.com:ach:1234` と B 社の `b-corp.com:ach:5678` は **異なる Achievement** として扱われる。
 
-これは「アンチ独占」原則の帰結 (どこか一つに集約しない)。一方、サイトをまたいだ集計・統合のために `aliases` フィールドを任意で提供する。
+これは「アンチ独占」原則の帰結 (どこか一つに集約しない)。一方、サイトをまたいだ集計・統合のために 2 つの仕組みを任意で提供する:
 
-### 7.6.1 `aliases` フィールドの使い方
+| 仕組み | 用途 | 判定方法 |
+|---|---|---|
+| `Achievement.external_ids` | 公式プラットフォーム (Steam / PSN / Xbox 等) の Achievement ID を保持 | 機械的自動マッチング |
+| `Achievement.aliases` | 他サイトの uid を「同等」と宣言 | 運営による手動宣言 |
 
-Achievement に `aliases` (任意配列、最大 50 件) を持たせ、**同じ達成行為を指す他サイトの uid** を宣言できる:
+両者は補完関係。公式 ID が存在する実績は `external_ids` で機械的に統合、無い (古いゲーム・独自実績) 場合は `aliases` で手動運用。
+
+### 7.6.1 `external_ids` — 公式プラットフォームの ID を保持
+
+Steam, PlayStation, Xbox 等の現代ゲームプラットフォームでは各実績に **公式 ID** が存在する。これを Achievement に保持できる:
+
+```json
+{
+  "uid": "example.com:ach:1234",
+  "title": "ナイツオブザラウンド入手",
+  "item_refs": {
+    "title": "Final Fantasy VII Remake",
+    "platform": "PS5",
+    "external_ids": {
+      "steam_appid": 1462040,
+      "psn_np_communication_id": "NPWR21015_00"
+    }
+  },
+  "external_ids": {
+    "steam_achievement_api_name": "ACH_KNIGHTS_OF_ROUND",
+    "psn_trophy_id": 42
+  }
+}
+```
+
+#### 推奨キー
+
+| キー | 値の型 | 説明 | 組合せ |
+|---|---|---|---|
+| `steam_achievement_api_name` | string | Steam achievement API name | `item_refs.external_ids.steam_appid` と組み合わせ |
+| `xbox_achievement_id` | integer | Xbox achievement ID | `xbox_title_id` と組み合わせ |
+| `psn_trophy_id` | integer | PSN trophy ID | `psn_np_communication_id` (+ `psn_trophy_group_id`) と組み合わせ |
+| `psn_trophy_group_id` | string | PSN trophy group (DLC 等) | base game は `null` または `"default"` |
+| `ra_achievement_id` | integer | RetroAchievements achievement ID | `ra_game_id` と組み合わせ |
+| `epic_achievement_id` | string | Epic Online Services achievement ID | — |
+| `gog_achievement_key` | string | GOG Galaxy achievement key | — |
+| `ubi_action_id` | string | Ubisoft Connect action ID | — |
+
+`additionalProperties: true` のため、将来の vendor 固有 ID は MINOR バージョンを待たず追加可能。
+
+#### 機械的同一性判定
+
+2 つの Achievement が **同じ公式 ID** を持つ場合、機械的に「同じ実績」と判定してよい:
+
+```pseudo
+function are_equivalent(ach1, ach2):
+    # 1. Steam appid + achievement_api_name で完全一致
+    if ach1.item_refs.external_ids.steam_appid == ach2.item_refs.external_ids.steam_appid
+       and ach1.external_ids.steam_achievement_api_name == ach2.external_ids.steam_achievement_api_name
+       and both are not null:
+        return True
+    # 2. PSN trophy (np_communication_id + trophy_id) で一致 ...
+    # 3. 他プラットフォームも同様
+    return False
+```
+
+#### 注意
+
+- ゲーム ID と Achievement ID の **両方** が必要 (Achievement ID 単独はゲームをまたぐと衝突する可能性)
+- Nintendo Switch には公式アカウント横断 Achievement システム自体がないため、対応キーは無い (独自実績扱い → `aliases` で対応)
+
+### 7.6.2 `aliases` — 手動宣言
+
+公式 ID が存在しない実績 (古いレトロゲーム、独自実績、コミュニティ実績等) や、公式 ID 同士でカバーできない統合は `aliases` で手動宣言する:
 
 ```json
 {
@@ -329,28 +397,28 @@ Achievement に `aliases` (任意配列、最大 50 件) を持たせ、**同じ
   "aliases": [
     "a-corp.com:ach:1234",
     "retroachievements.org:ach:42"
-  ],
-  ...
+  ]
 }
 ```
 
-### 7.6.2 ルール
+#### ルール
 
 - aliases は **片方向の宣言**。B 社が「a-corp 版・RA 版と同じ」と宣言すれば B 社内ではそう扱う。相手側 (A 社・RA) が逆方向の aliases を持つ必要はない
 - aliases は **取り込み時の自動判定には使わない**。実装サイトが運営審査で aliases を追加・編集する想定
-- 機械的同一性判定 (例: item_refs + conditions の自動マッチング) は **本仕様の責務外**。実装サイトが独自に判断してよいが、誤判定リスクと運営審査の必要性は実装者の責任
+- 機械的同一性判定 (`external_ids` 経由) は §7.6.1 を使う。aliases はそれを補う運用判断
 
 ### 7.6.3 取り込み時の挙動
 
 サイト A から取り込んだ UserAchievement (`achievement_uid = "a-corp.com:ach:1234"`) を B 社が受信:
 
-1. B 社が `b-corp.com:ach:5678` の aliases に `"a-corp.com:ach:1234"` を含んでいれば → **同じ Achievement と見なして集計可能** (達成者一覧に統合表示可能)
-2. aliases に含まれていなければ → 別 Achievement として扱う (a-corp 版を仮 Achievement として B 社 DB に保持、§9.5.2 import 擬似コード通り)
-3. 後日 B 社運営者が手動で aliases に追加すれば、過去の UserAchievement も統合表示の対象に
+1. B 社が **公式 ID 経由で同等の Achievement を持つ** (§7.6.1 のマッチング) → 機械的に統合可能
+2. B 社の既存 Achievement の `aliases` に `"a-corp.com:ach:1234"` を含んでいれば → 同じ Achievement と見なして集計可能
+3. どちらでもなければ → 別 Achievement として扱う (a-corp 版を仮 Achievement として B 社 DB に保持、§9.5.2 import 擬似コード通り)
+4. 後日 B 社運営者が手動で aliases に追加すれば、過去の UserAchievement も統合表示の対象に
 
 ### 7.6.4 集計の限界
 
-達成者数の世界集計 (例: 「FF7 ナイツオブザラウンドを達成した世界の人数」) は本仕様の責務外。各サイトが独自に集計し、aliases 経由で部分的に統合できるが、グローバル集計レジストリは v1.0 では提供しない。これは:
+達成者数の世界集計 (例: 「FF7 ナイツオブザラウンドを達成した世界の人数」) は本仕様の責務外。各サイトが独自に集計し、`external_ids` / `aliases` 経由で部分的に統合できるが、グローバル集計レジストリは v1.0 では提供しない。これは:
 
 - 各サイトの自律性を保つ (アンチ独占の徹底)
 - 集計レジストリ運営の事業判断を仕様に巻き込まない

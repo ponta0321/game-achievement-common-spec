@@ -241,6 +241,45 @@
       "maxItems": 50,
       "uniqueItems": true,
       "default": []
+    },
+    "external_ids": {
+      "type": "object",
+      "description": "Optional official Achievement IDs from external platforms. When multiple sites' Achievements share the same external_id value, they can be machine-identified as equivalent (complements `aliases` which is a manual declaration). Recommended keys: steam_achievement_api_name, xbox_achievement_id, psn_trophy_id, psn_trophy_group_id, ra_achievement_id, epic_achievement_id, gog_achievement_key, ubi_action_id. Additional keys are allowed for future / vendor-specific IDs.",
+      "properties": {
+        "steam_achievement_api_name": {
+          "type": ["string", "null"],
+          "description": "Steam achievement API name (e.g. 'ACH_KNIGHTS_OF_ROUND'). Unique within a Steam appid. Pair with `item_refs.external_ids.steam_appid` for full identification."
+        },
+        "xbox_achievement_id": {
+          "type": ["integer", "null"],
+          "description": "Xbox / Microsoft achievement ID. Pair with `item_refs.external_ids.xbox_title_id`."
+        },
+        "psn_trophy_id": {
+          "type": ["integer", "null"],
+          "description": "PlayStation Network trophy ID. Pair with `item_refs.external_ids.psn_np_communication_id` and optionally `psn_trophy_group_id`."
+        },
+        "psn_trophy_group_id": {
+          "type": ["string", "null"],
+          "description": "PSN trophy group ID (e.g. for DLC). 'default' or null for base game."
+        },
+        "ra_achievement_id": {
+          "type": ["integer", "null"],
+          "description": "RetroAchievements achievement ID. Pair with `item_refs.external_ids.ra_game_id`."
+        },
+        "epic_achievement_id": {
+          "type": ["string", "null"],
+          "description": "Epic Online Services achievement ID."
+        },
+        "gog_achievement_key": {
+          "type": ["string", "null"],
+          "description": "GOG Galaxy achievement key."
+        },
+        "ubi_action_id": {
+          "type": ["string", "null"],
+          "description": "Ubisoft Connect action ID."
+        }
+      },
+      "additionalProperties": true
     }
   },
   "additionalProperties": false

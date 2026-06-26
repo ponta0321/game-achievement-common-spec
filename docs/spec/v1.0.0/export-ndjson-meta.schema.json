@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ponta0321.github.io/game-achievement-common-spec/v1.0.0/export-ndjson-meta.schema.json",
+  "title": "ExportNdjsonMeta",
+  "description": "Game Achievement Common Spec v1.0.0 — Metadata line of NDJSON export. The first line of an NDJSON export file.",
+  "type": "object",
+  "required": [
+    "_meta",
+    "schema_version",
+    "source_site",
+    "exported_at",
+    "format"
+  ],
+  "properties": {
+    "_meta": {
+      "type": "boolean",
+      "const": true,
+      "description": "Marker that this line is the metadata header (always true)."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "source_site": {
+      "type": "string",
+      "format": "uri"
+    },
+    "exported_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "format": {
+      "type": "string",
+      "const": "ndjson",
+      "description": "Always 'ndjson' to distinguish from the single-file JSON envelope (export.schema.json)."
+    },
+    "expected_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Optional. Expected number of UserAchievement lines that follow. Used for client-side progress UI. Implementations should not strictly enforce equality (network drops, partial exports)."
+    }
+  },
+  "additionalProperties": false
+}

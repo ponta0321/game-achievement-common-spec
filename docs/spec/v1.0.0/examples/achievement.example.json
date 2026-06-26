@@ -50,5 +50,9 @@
   "attribution": "alice @ example.com",
   "aliases": [
     "other-site.com:ach:9999"
-  ]
+  ],
+  "external_ids": {
+    "psn_trophy_id": 42,
+    "psn_trophy_group_id": "default"
+  }
 }
