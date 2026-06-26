@@ -106,16 +106,16 @@ UserAchievement には **license フィールドを設けない**。個々の達
 ```
 <site_namespace>:<kind>:<local_id>
 
-site_namespace : 発行元サイトのドメイン (lowercase, ASCII)。例: gamesoft-navi.com
+site_namespace : 発行元サイトのドメイン (lowercase, ASCII)。例: example.com
 kind           : "ach"  → Achievement
                  "uach" → UserAchievement
 local_id       : 発行元サイト内での一意 ID (英数 + _ - : のみ)
 ```
 
 例:
-- Achievement (UGC): `gamesoft-navi.com:ach:1234`
-- Achievement (default): `gamesoft-navi.com:ach:default:cleared:17602`
-- UserAchievement: `gamesoft-navi.com:uach:88012`
+- Achievement (UGC): `example.com:ach:1234`
+- Achievement (default): `example.com:ach:default:cleared:17602`
+- UserAchievement: `example.com:uach:88012`
 
 これにより、複数サイトのデータをマージしても衝突しない。
 
@@ -239,7 +239,7 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 ```json
 {
   "schema_version": "1.0.0",
-  "source_site": "https://gamesoft-navi.com/",
+  "source_site": "https://example.com/",
   "exported_at": "2026-06-25T11:48:26+09:00",
   "user_achievements": [ /* UserAchievement[] */ ]
 }
@@ -474,17 +474,19 @@ v1.0.0 公開後、v1.x 系では **絶対に破壊的変更しない**。
 
 ## 15. 連絡先・改訂提案
 
-- 改訂提案は `CONTRIBUTING.md` を参照
-- 公開前 (社外秘期間中) の連絡先: 館長つくよみちゃん `gamesoft.navi@gmail.com`
-- 公開後: GitHub Issues 想定
+- 改訂提案・バグ報告: [GitHub Issues](https://github.com/ponta0321/game-achievement-common-spec/issues)
+- 仕様議論: [GitHub Discussions](https://github.com/ponta0321/game-achievement-common-spec/discussions) (有効化後)
+- 手順詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照
 
 ---
 
-## 16. 公開ロードマップ
+## 16. ロードマップ
 
 | 時期 | マイルストーン |
 |---|---|
-| 2026-06 | 仕様 v1.0.0 ドラフト完成 (本ドキュメント)、内部実装着手 |
-| 2026-07 ~ 2026-12 | ゲームソフトナビで MVP 運用、実データで検証 |
-| 2026-12 | 公開判断 (GO/NO-GO)。GO の場合、本ディレクトリを GitHub 公開 |
-| 公開後 | コミュニティからのフィードバックで v1.1.0 / v2.0.0 検討 |
+| 2026-06 | 仕様 v1.0.0-draft GitHub 公開 (本ドキュメント)、reference 実装着手 |
+| 2026-07 ~ 2026-12 | reference 実装 ([gamesoft-navi.com](https://gamesoft-navi.com/)) で MVP 運用、実データで検証 |
+| 2026-12 (目標) | フィードバックを反映し **v1.0.0 として凍結** |
+| v1.0.0 凍結後 | コミュニティからの提案で v1.1.0 (後方互換追加) / v2.0.0 (破壊的) を検討 |
+
+**現在のステータス**: v1.0.0-draft。凍結前のため破壊的変更が起こりうる。本仕様で実装する場合は CHANGELOG を購読すること。

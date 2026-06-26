@@ -1,6 +1,6 @@
 {
-  "record_uid": "gamesoft-navi.com:uach:88012",
-  "achievement_uid": "gamesoft-navi.com:ach:1234",
+  "record_uid": "example.com:uach:88012",
+  "achievement_uid": "example.com:ach:1234",
   "achievement_snapshot": {
     "title": "ナイツオブザラウンド入手",
     "description": "ヒュージマテリアを全て集めてナイツオブザラウンドを獲得する",

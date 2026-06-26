@@ -36,8 +36,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **origin**: `https://github.com/ponta0321/game-achievement-common-spec.git` (public)
 - 初回 push (`git push -u origin main`) はユーザー手動で実行する必要がある。以降の push も同様に手動。
-- Issue / PR の受付は README §16 の通り公開判断 (2026-12 GO/NO-GO) 後を想定。
+- Issue / PR は GitHub 上で常時受付。v1.0.0 凍結 (2026-12 目標) 前は破壊的変更も含めて柔軟に反映。
 
 ## 公開状況
 
-README §16 のロードマップ通り、現時点 (2026-06) は **公開判断前 (社外秘)** の段階。Issue/PR 受付や GitHub Discussions は公開後 (2026-12 GO/NO-GO 判断以降) に開始予定。
+- 2026-06-26 に **GitHub で v1.0.0-draft として公開済み** (public)
+- README §16 ロードマップでは 2026-12 を目標に v1.0.0 として **凍結** 予定
+- 凍結前は破壊的変更を行う場合がある (CHANGELOG 参照)
