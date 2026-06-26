@@ -269,6 +269,32 @@ Verified サイトのレスポンス例:
 - `data_spec_version` / `transport_spec_version` / `trust_spec_version` は **各 spec の独立バージョン** (conformance.md §8 参照)
 - `conformance` が `basic` の場合、`endpoints` / `trust` フィールドは省略可
 
+### 7.3 well-known の主要フィールド仕様
+
+#### 7.3.1 `import_policy` オブジェクト
+
+受信側サイトの取り込みポリシーを宣言する。送信側はこれを見て「相手がどう扱うか」を事前に把握できる。
+
+| フィールド | 型 | 既定 | 意味 |
+|---|---|---|---|
+| `accepts_basic_json` | boolean | `true` | Basic サイトからの Data spec ファイル import を受け付けるか。`false` の場合、Verified 送信元のみ受理 |
+| `requires_verified_signature` | boolean | `false` | `true` の場合、全 import に JWS 署名を要求 (Verified 同士の通信のみ受理)。Connected からの user_achievements は reject |
+| `auto_approve_verified` | boolean | `false` | `true` の場合、Verified 経由 + JWS 検証通過のレコードを **approved 即時投入**。`false` の場合、検証通過後も pending 投入 (運営審査経由) |
+
+組み合わせ例:
+- 個人開発者向けオープン: `{accepts_basic_json: true, requires_verified_signature: false, auto_approve_verified: false}` — 何でも受け取って全 pending
+- 企業向け閉鎖: `{accepts_basic_json: false, requires_verified_signature: true, auto_approve_verified: true}` — Verified 同士のみ即時 approve
+
+#### 7.3.2 `supported_languages` 配列
+
+サイトの **UI / 表示でサポートされる言語** (BCP 47 タグ) を宣言する。送信側はこれを見て、ユーザーに表示する言語を選択できる (`title_i18n` のうちどれが受信側で活きるか判定)。
+
+- 値は BCP 47 タグの配列 (例: `["ja", "en", "zh-Hant"]`)
+- 受信側がこの配列に無い言語のテキストを受け取った場合、UI 表示は primary_lang にフォールバックする
+- 配列の **最初の要素が受信側のデフォルト UI 言語** (RFC 4647 の優先順)
+
+このフィールドは「データの言語フィルタ」ではなく「表示の hint」。Data spec の primary_lang / title_i18n は引き続き全て保持されるべき (将来 UI 言語追加時のため)。
+
 ### 7.2 Capability discovery のフロー
 
 ```

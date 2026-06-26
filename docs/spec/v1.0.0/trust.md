@@ -13,7 +13,7 @@ OAuth 2 ベースの直接通信 (Transport spec) では `Authorization: Bearer`
 本仕様は以下を実現する:
 
 - **発行サイトが UserAchievement / Achievement レコードに JWT 署名を付与**
-- 受信サイトは公開鍵 (JWKS) で検証 → 検証通過なら approved 即時投入可
+- 受信サイトは公開鍵 (JWKS) で検証 → **真正性を機械的に確認できる**。検証通過時の取り込みポリシー (approved 即時 / pending) は受信サイトが well-known の `import_policy.auto_approve_verified` で宣言する
 - **改竄不能性**: ユーザー介入を排除した OAuth 2 通信路 + 署名検証で機械的に真正性を確認
 
 ---
@@ -94,6 +94,15 @@ OAuth 2 ベースの直接通信 (Transport spec) では `Authorization: Bearer`
   "cty": "application/json"
 }
 ```
+
+##### header フィールドの意味
+
+| Claim | 必須 | 意味 | 活用 |
+|---|---|---|---|
+| `alg` | ✅ | 署名アルゴリズム (§3.2) | 検証時に使用 |
+| `kid` | ✅ | 鍵 ID (jwks.json の `kid` と一致) | 鍵選択に使用 |
+| `typ` | 🟡 | この JWS の type | 受信側が他形式 (汎用 JWT 等) と本仕様の JWS を区別するための識別子。値は **`achievement-spec+jws` 固定**。受信側は `typ != "achievement-spec+jws"` の JWS を本仕様外として無視してよい |
+| `cty` | 🟡 | payload の Content-Type | `application/json` 固定。payload を JSON としてパースする hint |
 
 #### payload (UserAchievement 署名の場合):
 ```json
