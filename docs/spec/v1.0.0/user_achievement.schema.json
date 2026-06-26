@@ -75,7 +75,7 @@
         },
         "thumbnail": {
           "type": ["object", "null"],
-          "description": "data_uri only. Identity is verified by sha256 of binary content, not by preset_id.",
+          "description": "data_uri only. Display-only; identification uses achievement_uid (see README §7.3).",
           "properties": {
             "data_uri": {
               "type": "string",

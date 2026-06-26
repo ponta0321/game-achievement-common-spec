@@ -16,8 +16,12 @@ THE CREW (Ubisoft, 2024 サービス終了) のように、運営の判断ひと
 2. **アンチ独占** — 単一サイト・単一企業に集約させない設計
 3. **永続性** — 1サイトが消滅しても他サイトでデータが活き続ける
 4. **自己完結性** — 1レコードだけ取り出しても、何の作品の何の実績か表示可能 (`achievement_snapshot`)
-5. **改竄耐性** — ユーザーがローカルで JSON を編集できる前提で、画像バイナリ sha256 で識別
-6. **後方互換** — v1.0.0 で凍結。破壊的変更は v2.0.0 として並行発行
+5. **後方互換** — v1.0.0 で凍結。破壊的変更は v2.0.0 として並行発行
+
+### 本仕様の責務 *外* (重要)
+
+- **データの真正性保証** — ユーザーがローカルで JSON を編集する自由を尊重するため、本仕様はバイナリレベルの改竄検出機構を持たない。受け取った JSON が正しいかどうかの判定は **取り込み側サイトの運営ワークフロー (pending → approved 等)** で行う設計とする
+- **著作権・商標の取り扱い** — ゲームタイトル名 / メーカー名 / サムネ画像の権利関係は実装者が各法域で個別判断する
 
 ---
 
@@ -179,7 +183,7 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 
 ```json
 "thumbnail": {
-  "data_uri": "data:image/png;base64,..."          // 16x16 reference (必須レベル推奨)
+  "data_uri": "data:image/png;base64,..."          // 16x16 reference (推奨)
 },
 "thumbnails_extra": [                                // 任意・最大 5 件
   { "size": 64,  "data_uri": "data:image/png;base64,..." },
@@ -187,29 +191,31 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 ]
 ```
 
-- `data_uri` のみ。`preset_id` / `kind` / `license` 等の派生情報は持たない
+- `data_uri` のみ
 - `thumbnail.data_uri` の `maxLength` は 2000 文字 (≒ 1.4KB バイナリ)
 - `thumbnails_extra[].data_uri` の `maxLength` は 80000 文字 (≒ 55KB バイナリ)。合計ペイロードは ~200KB 以下に収めることを推奨
 - `size` は `[32, 64, 128, 256, 512]` のいずれか (正方形のみ)
 - 同一 size のエントリは複数持たない (実装側は最初のものを採用)
 
-### 7.3 識別の原則 (重要)
+### 7.3 同一性の判定について
 
-実装サイトが「同じ実績のサムネかどうか」を判定する際は、**sha256 バイナリ照合** を使用する。判定の優先順位:
+**同じ実績かどうかの判定は `achievement_uid` のみで行う**。サムネはあくまで表示用であり、識別子としては使わない。
 
-1. **`thumbnail` (16×16 reference) の sha256 を最優先で照合** — 全実装が持つ「べき」reference サイズ。最も信頼できる識別子
-2. `thumbnail` が両側に無い (どちらかが省略) → `thumbnails_extra` のうち **両者が共通して持つ size のエントリの sha256** を順に試す (大きい size から)。共通 size が無ければマッチ不能
-3. `preset_id` 等の付帯情報による識別は禁止 (改竄可能なため)
+理由 (v1.0 設計時の検討結果):
 
-`thumbnails_extra` 同士は **size が違えば sha256 も異なる** (リサイズしただけで別ハッシュ)。マッチ不能を避けるため、§7.4 の「自動ダウンサンプリングで 16×16 reference を生成する」を強く推奨する。
+- サイトをまたぐと同じ実績でもデザイナー違いでサムネが異なり、バイナリレベルの一致は期待できない
+- PNG/WebP エンコーダの違い・メタデータチャンクの差で sha256 は容易に変動するため、ピクセル配列が同じでもハッシュは違う値になる
+- バイナリ識別が機能するには「公式サムネ sha256 の中立レジストリ」が必要だが、本仕様はそうしたレジストリを規定しない (将来の v1.x で任意機能として検討する余地あり)
+
+したがって本仕様は「サムネ改竄を機械的に検出する」機構を持たない。データの真正性担保は **取り込み側サイトの運営ワークフロー (pending → approved 等)** の責務とする。
 
 ### 7.4 16×16 reference を省略してよいか
 
 「Achievement に大きいアイコンしか無い (Steam インポート等) ため 16×16 を作れない」ケースがある。
 
-- **推奨**: 実装サイトが取り込み時に **自動ダウンサンプリング** で 16×16 を生成し `thumbnail` に格納する
-- **許容**: `thumbnail` を null とし `thumbnails_extra` のみ持つ。ただし他サイトとの sha256 識別精度は落ちる
-- **禁止**: `thumbnails_extra` の中に「16」や「16×16 相当」を入れること (reference は `thumbnail` フィールドに統一)
+- **推奨**: 実装サイトが取り込み時に **自動ダウンサンプリング** で 16×16 を生成し `thumbnail` に格納する (表示の一貫性のため)
+- **許容**: `thumbnail` を null とし `thumbnails_extra` のみ持つ
+- **避けるべき**: `thumbnails_extra` の中に 16×16 相当を入れること (reference は `thumbnail` フィールドに統一)
 
 ---
 
@@ -270,7 +276,7 @@ function display_title(achievement, user_lang):
 
 ### 7.5.4 識別との関係
 
-テキストは識別子ではなく **表示用**。同一性判定は引き続き `achievement_uid` + thumbnail sha256 (§7.3) で行う。同じ `achievement_uid` を持つレコードが言語違いの title を持っていても、それは「翻訳の追加」として扱う (実績の同一性は変わらない)。
+テキストは識別子ではなく **表示用**。同一性判定は `achievement_uid` のみで行う (§7.3)。同じ `achievement_uid` を持つレコードが言語違いの title を持っていても、それは「翻訳の追加」として扱う (実績の同一性は変わらない)。
 
 ### 7.5.5 v1.0 で意図的に入れないもの
 
@@ -294,7 +300,7 @@ function display_title(achievement, user_lang):
 [サイト B] POST /import (ファイルアップロード + handle + password)
   → schema_version 検証 (1.x 受理、未知フィールドは無視)
   → record_uid 重複検知 (既取込みはスキップ)
-  → achievement_uid + thumbnail.data_uri sha256 で識別 (§7.3)
+  → achievement_uid で識別 (§7.3)
   → 自サイト発行物 / 他サイト発行物 を判別
   → item_refs.external_ids → title+platform → title_i18n.*+platform
      の順で サイト B 側の item に紐付け
@@ -391,7 +397,7 @@ function import_export(file, current_user):
         if exists_record(record.record_uid, current_user):
             continue  # skip silently
 
-        # 3. achievement_uid + thumbnail.sha256 で識別
+        # 3. achievement_uid で識別 (サムネは表示専用、同一性判定には使わない)
         ach_local = lookup_achievement(record.achievement_uid)
         if ach_local is None:
             # 自サイトに無い → snapshot から仮 Achievement を生成 or pending 投入
@@ -505,15 +511,20 @@ function export_for_user(user):
 - JSON Schema レベルでは `additionalProperties: false` で締めているが、これは「v1.0.0 スキーマでの厳格検証用」。**実装の取り込みパスでは additionalProperties 違反は warning に留め reject しない** こと
 - `external_ids` のみ `additionalProperties: true` で開いており、vendor 固有 ID (例: `steam_appid`) は MINOR バージョンを待たずに追加可能
 
-### 10.4 改竄耐性 (取込み実装)
+### 10.4 取り込み時の運営審査 (重要)
 
-ユーザーがローカル端末で JSON を編集できる前提で、取込み側は以下を守る:
+本仕様はユーザーがローカルで JSON を編集できる自由を尊重するため、**バイナリレベルの改竄検出機構を持たない**。データの真正性は取り込み側サイトの運営ワークフローで担保する。
 
-1. **uid だけを信用しない** — `achievement_uid` だけで判定すると偽装に脆弱
-2. **画像 sha256 で照合** — `thumbnail.data_uri` のバイナリ sha256 を計算し、自サイトの「公式実績ハッシュテーブル」と突合 (一致すれば正規実績、不一致なら UGC 扱い)
-3. **整合性が取れない入力は pending で投入** — 即拒否ではなく、運営者が後で判断できる状態にする
-4. **取り込み元 (`source_site` / uid namespace) を保持** — 後追い検証や問い合わせのため
-5. **proof_url のホストホワイトリスト適用** — §10.1.2 の推奨ホスト以外は受理しない or 警告
+最低限のガイドライン:
+
+1. **取り込みは pending で投入** — 即時 approved にしない。運営者または信頼スコアの高いユーザーによるレビューを経て approved に昇格させる
+2. **取り込み元 (`source_site` / uid namespace) を保持** — 後追い検証・問い合わせ・トレーサビリティのため
+3. **proof_url のホストホワイトリスト適用** — §10.1.2 の推奨ホスト以外は受理しない or 警告
+4. **同一実績の複数取り込みを検出** — `record_uid` 重複でスキップ、`achievement_uid` 一致は同一実績の別記録として扱う
+5. **異常入力 (極端に長い文字列、不正な data_uri、未知 schema_version 等) は warning ログ + pending** — reject ではなく後で判断可能な状態に
+6. **UI で「取り込み元」「審査ステータス」を明示** — エンドユーザーが「他サイトから持ち込んだ未審査データ」だと識別できるように
+
+「機械的な真正性判定」を希望する実装サイトは、独自に「公式実績ハッシュレジストリ」や Ed25519 署名等を上位レイヤとして導入してよい (本仕様では規定しない)。
 
 ---
 
@@ -545,7 +556,7 @@ v1.0.0 公開後、v1.x 系では **絶対に破壊的変更しない**。
 | UserAchievement の `handle_name` | `record_uid` の名前空間で発行元サイトは判明、誰のかは取込みコンテキストで管理 |
 | UserAchievement の `verification` | v1.0.0 では `self_report` のみで運用、enum 拡張は v1.1 以降に検討 |
 | UserAchievement の `schema_version` / `source_site` (レコード単位) | トップに1つあれば十分 |
-| Thumbnail の `kind` / `preset_id` / `palette` / `license` / `attribution` | 識別は sha256 バイナリ照合に統一、preset_id によるヒントは改竄リスク高 |
+| Thumbnail の `kind` / `preset_id` / `palette` / `license` / `attribution` | サムネは表示専用とし識別には使わない方針 (§7.3) のため、付帯情報は不要 |
 | エクスポート JSON トップの `count` | `user_achievements.length` と冗長 |
 
 これにより、共通仕様としてミニマルかつ自己完結したデータ構造に整理された。

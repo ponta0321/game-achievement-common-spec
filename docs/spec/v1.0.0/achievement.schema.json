@@ -175,7 +175,7 @@
     },
     "thumbnail": {
       "type": ["object", "null"],
-      "description": "Reference thumbnail (16x16 square, recommended). data_uri only. Identity is verified by sha256 of binary content. For higher-resolution variants use `thumbnails_extra`.",
+      "description": "Reference thumbnail (16x16 square, recommended). data_uri only. Used for display, not for identification (achievement_uid is the identifier; see README §7.3). For higher-resolution variants use `thumbnails_extra`.",
       "required": ["data_uri"],
       "properties": {
         "data_uri": {
@@ -189,7 +189,7 @@
     },
     "thumbnails_extra": {
       "type": "array",
-      "description": "Optional additional thumbnail variants at larger sizes (64/128/256/512). Useful when importing from Steam/Xbox/PSN/RetroAchievements where source icons are high-resolution. sha256 identity should still be computed primarily against `thumbnail` (16x16 reference). See README §7.3.",
+      "description": "Optional additional thumbnail variants at larger sizes (64/128/256/512). Useful when importing from Steam/Xbox/PSN/RetroAchievements where source icons are high-resolution. Display-only; identification uses achievement_uid (see README §7.3).",
       "maxItems": 5,
       "items": {
         "type": "object",
