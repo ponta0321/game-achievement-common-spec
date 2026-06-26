@@ -1,9 +1,5 @@
 # Release Notes — v1.0.0
 
-> このファイルは GitHub Release 作成時に貼り付ける説明文の準備です。実際の公開時にユーザーが GitHub Release ページで使用します。
-
----
-
 ## Game Achievement Common Spec v1.0.0
 
 ゲームの達成記録 (アチーブメント) を**特定企業・特定サイトに依存しない形で共有する**オープン標準の v1.0.0 を公開しました。
