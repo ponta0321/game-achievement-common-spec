@@ -765,15 +765,39 @@ function export_for_user(user):
 
 ### 10.3 拒否すべき入力 / 前方互換の扱い
 
-**拒否すべき:**
-- `schema_version` が v1.x 範囲外 (`^1\.` にマッチしない)
-- `uid` / `record_uid` のフォーマット不正
-- `item_refs.title` または `item_refs.platform` 欠落
+#### 10.3.1 拒否すべきデータ全体 (バッチ単位 reject)
 
-**前方互換ルール (重要):**
-- v1.0.0 実装は **v1.1+ の schema_version を持つデータを「受理」** すること (拒否しない)
+以下はバッチ全体を reject:
+- `schema_version` が v1.x 範囲外 (`^1\.` にマッチしない)
+- トップレベル必須フィールド (`schema_version` / `source_site` / `exported_at` / `user_achievements`) の欠落
+- `user_achievements` が配列でない
+
+#### 10.3.2 拒否すべき個別レコード (レコード単位 skip + warning)
+
+バッチ全体は受理しつつ、個別レコードを skip し warning ログに記録:
+- `record_uid` / `achievement_uid` / `uid` のフォーマット不正 (pattern 違反)
+- 必須フィールド (`item_refs.title` / `item_refs.platform` / `achieved_at` / `created_at` 等) の欠落
+- 型不一致 (例: `difficulty: "hard"` のように integer 期待で文字列)
+- format 違反 (例: `achieved_at: "2026/06/20"` のように date format 不一致)
+- `data_uri` の pattern / maxLength 違反 (例: `image/jpeg` を使用、2KB 超過)
+
+skip した場合、レスポンス (またはバッチログ) で件数と理由を返す:
+```json
+{ "imported": 42, "skipped_duplicates": 3, "skipped_invalid": 2, "rejected": 0 }
+```
+
+#### 10.3.3 受理しつつ警告 (warning に留め継続)
+
+データを受理し、warning ログに記録するが import は続行:
+- **未知フィールドの存在** (`additionalProperties` 違反) — v1.1+ で追加された任意フィールド
+- **未知の enum 値** — 例: `category` が将来追加された値 (受信側は「未知」として保持)
+- **`external_ids` の未知キー** (`additionalProperties: true` なのでスキーマレベルで OK、未知キーも保持)
+
+#### 10.3.4 前方互換ルール (重要)
+
+- v1.0.0 実装は **v1.1+ の schema_version を持つデータを「受理」** すること (10.3.1 の `^1\.` にマッチするため拒否されない)
 - v1.x 系での MINOR バージョンアップは「任意フィールド追加」「enum 値追加」のみ → 未知フィールドは無視して読み飛ばすだけで動く
-- JSON Schema レベルでは `additionalProperties: false` で締めているが、これは「v1.0.0 スキーマでの厳格検証用」。**実装の取り込みパスでは additionalProperties 違反は warning に留め reject しない** こと
+- JSON Schema レベルでは `additionalProperties: false` で締めているが、これは「v1.0.0 スキーマでの厳格検証用」。**実装の取り込みパスでは 10.3.3 のルールで処理する**
 - `external_ids` のみ `additionalProperties: true` で開いており、vendor 固有 ID (例: `steam_appid`) は MINOR バージョンを待たずに追加可能
 
 ### 10.4 取り込み時の運営審査 (重要)
