@@ -10,7 +10,8 @@
     "authorize": "https://example.com/api/v1/oauth/authorize",
     "token": "https://example.com/api/v1/oauth/token",
     "user_achievements": "https://example.com/api/v1/user_achievements",
-    "achievements": "https://example.com/api/v1/achievements/{uid}"
+    "achievements": "https://example.com/api/v1/achievements/{uid}",
+    "profile": "https://example.com/api/v1/profile"
   },
   "supported_scopes": [
     "achievements:read",

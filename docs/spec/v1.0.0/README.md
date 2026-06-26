@@ -593,6 +593,8 @@ function export_for_user(user):
   → サイト跨ぎの作品マッチング精度が劇的に上がる
 - エクスポート時に内部運用フィールド (owner_code_hash / report_count 等) を **削除** する
 - 日付フィールドは ISO 8601 で出力 (`achieved_at` は date、`created_at` は date-time)
+- **`created_at` は発行サイトの DB INSERT 時刻** を意味する。取り込み側は自サイトの取り込み時刻を内部 DB の **別カラム** (例: `imported_at`) で持つこと。エクスポート時は元の `created_at` をそのまま再出力する (取り込み時刻で上書きしない)
+- **`record_uid` / `achievement_uid` は発行サイトの値をそのまま保持**。取り込み側で新規 ID を割り振らない (重複検知が崩れるため)
 
 ### 10.3 拒否すべき入力 / 前方互換の扱い
 
@@ -669,6 +671,10 @@ SemVer 厳守:
 | `report_count` | 通報集計 (モデレーション) |
 | `moderation_status` | 運営による pending / approved / hidden 管理 |
 | `local_db_id` | DB の PK (連番) |
+| `imported_at` | 他サイトからの取り込み時刻 (`created_at` は元サイトの DB INSERT 時刻なので、取り込み時刻は別カラムで保持) |
+| `imported_from` | 取り込み元サイト (`source_site` 値、Trust spec で受け取った場合は payload.iss) |
+| `import_channel` | 取り込み経路 (`file` / `oauth2` / `oauth2+signed`) |
+| `owner_user_id` | 自サイトでの所有ユーザー ID (取り込み時の OAuth 2 セッションから決定) |
 
 エクスポート時に上記を除外することで、本仕様準拠の JSON を出力できる。
 
