@@ -67,35 +67,43 @@ docs/spec/v1.0.0/
 
 ## 4. データモデル概要
 
-本仕様は **2 種類のエンティティ**から成る。
+本仕様は **2 種類のエンティティ**から成る。各フィールドの厳密な型・制約は JSON Schema (`achievement.schema.json` / `user_achievement.schema.json`) を一次情報とし、本節は読みやすさのための要約である。
 
 ### 4.1 Achievement (達成項目の定義)
 
 「ある作品に対して定義された目標 (例: 全マテリア収集)」を表す。誰が作成してもよい。複数サイトで独立に同等の Achievement が定義されてもよい (`uid` で識別)。
 
-主要フィールド:
+**必須フィールド:**
 - `schema_version` — `"1.0.0"` 固定
 - `uid` — グローバル一意 ID (`<site_namespace>:ach:<local_id>`)
-- `source_site` — 発行元サイト URL
-- `item_refs` — 対象作品参照 (title + platform 必須、external_ids 任意)
-- `title` / `description` / `category` / `difficulty` / `tags` / `conditions`
-- `thumbnail` — **16×16 ドット絵サムネ**。`data_uri` のみ
-- `created_by` / `created_at` / `updated_at`
-- `license` — デフォルト `CC-BY-SA-4.0`
-- `attribution` — クレジット表記 (任意)
+- `primary_lang` — テキストフィールドの主言語 (BCP 47, 例: `ja`, `en-US`)。§7.5 参照
+- `item_refs` — 対象作品参照 (title + platform 必須)
+- `title` — 実績タイトル (primary_lang での値、2〜80 文字)
+- `created_at` — 作成日時 (date-time)
+- `license` — SPDX ID、デフォルト `CC0-1.0`
+
+**任意フィールド (主要):**
+- `source_site` — 発行元サイト URL (uid prefix と冗長なので省略可)
+- `title_i18n` / `description_i18n` — `{ "<bcp47>": "..." }` の翻訳マップ
+- `description` (≤600 字) / `category` / `difficulty` (1-5) / `tags` (≤10) / `conditions`
+- `thumbnail` — **16×16 reference サムネ** (data_uri、≤2KB)
+- `thumbnails_extra` — 32/64/128/256/512 の追加サムネ (任意、最大 5 件)。§7 参照
+- `created_by` (ハンドル名) / `updated_at` / `attribution`
 
 ### 4.2 UserAchievement (ユーザー達成記録)
 
-「あるユーザーが ある Achievement を達成した記録」を表す。**他サイトに持ち込んでも自己完結する**よう、表示に必要な最小情報 (`achievement_snapshot`) を埋め込む。
+「あるユーザーが ある Achievement を達成した記録」を表す。**他サイトに持ち込んでも自己完結する**よう、表示に必要な最小情報 (`achievement_snapshot`) を i18n マップ込みで埋め込む。
 
-主要フィールド:
+**必須フィールド:**
 - `record_uid` — この記録自身のグローバル一意 ID (`<site_namespace>:uach:<local_id>`)
 - `achievement_uid` — 対象 Achievement の uid
-- `achievement_snapshot` — 表示用スナップショット (title / description / thumbnail.data_uri)
-- `item_refs` — 達成時の作品参照
+- `item_refs` — 達成時の作品参照 (title + platform 必須)
 - `achieved_at` — ユーザー申告の達成日 (date)
 - `created_at` — DB 登録時刻 (date-time)
-- `comment` / `proof_url` — 任意
+
+**任意フィールド (主要):**
+- `achievement_snapshot` — 表示用スナップショット (title / title_i18n / description / description_i18n / thumbnail)
+- `comment` (≤400 字) / `comment_lang` (BCP 47) / `proof_url`
 
 UserAchievement には **license フィールドを設けない**。個々の達成行為は知的創作物ではなく、ライセンスは Achievement (定義) に従う。
 
@@ -276,12 +284,15 @@ function display_title(achievement, user_lang):
 
 ```
 [サイト B] POST /import (ファイルアップロード + handle + password)
-  → schema_version 検証 (1.x のみ受理)
+  → schema_version 検証 (1.x 受理、未知フィールドは無視)
   → record_uid 重複検知 (既取込みはスキップ)
-  → achievement_uid + thumbnail.data_uri sha256 で識別
+  → achievement_uid + thumbnail.data_uri sha256 で識別 (§7.3)
   → 自サイト発行物 / 他サイト発行物 を判別
-  → item_refs.external_ids または title+platform+release で
-     サイト B 側の item に紐付け
+  → item_refs.external_ids → title+platform → title_i18n.*+platform
+     の順で サイト B 側の item に紐付け
+  → primary_lang とサイト B のユーザー言語が異なる場合は
+     achievement_snapshot.title_i18n / item_refs.title_i18n から
+     ユーザー言語の表記を取得 (無ければ primary_lang のまま)
   → 取込み (pending → 運営審査 → approved)
 ```
 

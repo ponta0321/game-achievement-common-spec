@@ -14,8 +14,8 @@
   "properties": {
     "record_uid": {
       "type": "string",
-      "pattern": "^[a-z0-9.-]+:uach:[A-Za-z0-9_-]+$",
-      "description": "Globally unique ID of this user_achievement record. Format: <site_namespace>:uach:<local_id>"
+      "pattern": "^[a-z0-9.-]+:uach:[A-Za-z0-9_:-]+$",
+      "description": "Globally unique ID of this user_achievement record. Format: <site_namespace>:uach:<local_id>. local_id may contain ':' for hierarchical IDs, matching achievement.uid."
     },
     "achievement_uid": {
       "type": "string",
