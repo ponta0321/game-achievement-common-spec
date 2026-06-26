@@ -90,10 +90,10 @@
           "type": "object",
           "description": "Recommended keys: igdb_id, mobygames_id, wikidata_id, ra_game_id, steam_appid, xbox_title_id, psn_np_communication_id. Additional keys are allowed for future / vendor-specific IDs.",
           "properties": {
-            "igdb_id":      { "type": "integer" },
-            "mobygames_id": { "type": "integer" },
-            "wikidata_id":  { "type": "string", "pattern": "^Q[0-9]+$" },
-            "ra_game_id":   { "type": "integer", "description": "RetroAchievements game ID" }
+            "igdb_id":      { "type": ["integer", "null"] },
+            "mobygames_id": { "type": ["integer", "null"] },
+            "wikidata_id":  { "type": ["string", "null"], "pattern": "^Q[0-9]+$" },
+            "ra_game_id":   { "type": ["integer", "null"], "description": "RetroAchievements game ID" }
           },
           "additionalProperties": true
         }
