@@ -1,0 +1,21 @@
+{
+  "record_uid": "gamesoft-navi.com:uach:88012",
+  "achievement_uid": "gamesoft-navi.com:ach:1234",
+  "achievement_snapshot": {
+    "title": "ナイツオブザラウンド入手",
+    "description": "ヒュージマテリアを全て集めてナイツオブザラウンドを獲得する",
+    "thumbnail": {
+      "data_uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAA5JREFUOMtjYBgFwwUAAAJgAAH+QYx1AAAAAElFTkSuQmCC"
+    }
+  },
+  "item_refs": {
+    "local_id": 17602,
+    "title": "ファイナルファンタジーVII",
+    "platform": "PS",
+    "release_date": "1997-01-31"
+  },
+  "achieved_at": "2026-06-20",
+  "created_at": "2026-06-20T22:30:00+09:00",
+  "comment": "3周目でようやく揃った",
+  "proof_url": "https://www.youtube.com/watch?v=XXXXX"
+}

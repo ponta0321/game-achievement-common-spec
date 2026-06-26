@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ponta0321.github.io/game-achievement-common-spec/v1.0.0/achievement.schema.json",
+  "title": "Achievement",
+  "description": "Game Achievement Common Spec v1.0.0 — Achievement definition",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "uid",
+    "item_refs",
+    "title",
+    "created_at",
+    "license"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "uid": {
+      "type": "string",
+      "pattern": "^[a-z0-9.-]+:ach:[A-Za-z0-9_:-]+$",
+      "description": "Globally unique ID. Format: <site_namespace>:ach:<local_id>. local_id may contain ':' for hierarchical IDs (e.g. 'default:cleared:17602')."
+    },
+    "source_site": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "Origin site URL (optional). Redundant with the namespace prefix of `uid`; included only when a richer URL than the bare domain is needed (e.g. https path with locale)."
+    },
+    "item_refs": {
+      "type": "object",
+      "required": ["title", "platform"],
+      "properties": {
+        "local_id": {
+          "type": ["integer", "null"],
+          "description": "Origin site internal item ID (optional)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Game title"
+        },
+        "platform": {
+          "type": "string",
+          "pattern": "^[A-Z0-9_]{2,16}$",
+          "description": "Platform identifier (uppercase ASCII + digits + underscore, 2-16 chars). Recommended values: PS, PS2, PS3, PS4, PS5, PSP, PSV, NSW, WIIU, WII, GC, N64, SNES, SFC, NES, FC, GB, GBA, GBC, NDS, 3DS, XBOX, X360, XBONE, XBSX, PC, ARC, MD, SAT, DC, PCE, NEOGEO."
+        },
+        "release_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "maker": {
+          "type": ["string", "null"]
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "Recommended keys: igdb_id, mobygames_id, wikidata_id, ra_game_id, steam_appid, xbox_title_id, psn_np_communication_id. Additional keys are allowed for future / vendor-specific IDs.",
+          "properties": {
+            "igdb_id":      { "type": ["integer", "null"] },
+            "mobygames_id": { "type": ["integer", "null"] },
+            "wikidata_id":  { "type": ["string", "null"], "pattern": "^Q[0-9]+$" },
+            "ra_game_id":   { "type": ["integer", "null"], "description": "RetroAchievements game ID" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "title": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+    },
+    "description": {
+      "type": ["string", "null"],
+      "maxLength": 600
+    },
+    "category": {
+      "type": ["string", "null"],
+      "enum": ["clear", "speedrun", "collection", "challenge", "discovery", "social", "other", null]
+    },
+    "difficulty": {
+      "type": ["integer", "null"],
+      "minimum": 1,
+      "maximum": 5
+    },
+    "conditions": {
+      "type": "array",
+      "description": "Machine-readable conditions (optional). `type` is a free-form lowercase_snake_case identifier. Recommended values: no_damage, no_death, no_item_use, no_save, time_under, score_over, collect_all, level_under, boss_defeat, chapter_complete, custom.",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,31}$"
+          },
+          "param": { "type": ["string", "null"] },
+          "value": { "type": ["number", "null"] }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 30 },
+      "maxItems": 10,
+      "default": []
+    },
+    "thumbnail": {
+      "type": ["object", "null"],
+      "description": "Square 16x16 thumbnail. data_uri only. Identity is verified by sha256 of binary content.",
+      "required": ["data_uri"],
+      "properties": {
+        "data_uri": {
+          "type": "string",
+          "pattern": "^data:image/(png|webp|gif);base64,[A-Za-z0-9+/=]+$",
+          "maxLength": 2000,
+          "description": "16x16 pixel art encoded as base64 data URI. ~1.4KB binary max."
+        }
+      },
+      "additionalProperties": false
+    },
+    "created_by": {
+      "type": ["string", "null"],
+      "description": "Handle name (optional). CC0 does not require attribution; use `attribution` field instead when credit is desired."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier. Default is CC0-1.0 to maximize portability.",
+      "default": "CC0-1.0"
+    },
+    "attribution": {
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false
+}

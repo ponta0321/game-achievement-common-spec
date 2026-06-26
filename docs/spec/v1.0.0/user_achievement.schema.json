@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ponta0321.github.io/game-achievement-common-spec/v1.0.0/user_achievement.schema.json",
+  "title": "UserAchievement",
+  "description": "Game Achievement Common Spec v1.0.0 — User achievement record",
+  "type": "object",
+  "required": [
+    "record_uid",
+    "achievement_uid",
+    "item_refs",
+    "achieved_at",
+    "created_at"
+  ],
+  "properties": {
+    "record_uid": {
+      "type": "string",
+      "pattern": "^[a-z0-9.-]+:uach:[A-Za-z0-9_-]+$",
+      "description": "Globally unique ID of this user_achievement record. Format: <site_namespace>:uach:<local_id>"
+    },
+    "achievement_uid": {
+      "type": "string",
+      "pattern": "^[a-z0-9.-]+:ach:[A-Za-z0-9_:-]+$",
+      "description": "Target Achievement uid"
+    },
+    "achievement_snapshot": {
+      "type": ["object", "null"],
+      "description": "Snapshot of the target Achievement at the time of recording. Enables import sites to display title/thumbnail without needing the original Achievement record.",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "thumbnail": {
+          "type": ["object", "null"],
+          "description": "data_uri only. Identity is verified by sha256 of binary content, not by preset_id.",
+          "properties": {
+            "data_uri": {
+              "type": "string",
+              "pattern": "^data:image/(png|webp|gif);base64,[A-Za-z0-9+/=]+$",
+              "maxLength": 2000
+            }
+          },
+          "required": ["data_uri"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "item_refs": {
+      "type": "object",
+      "description": "Game references. title + platform required. Other fields optional.",
+      "required": ["title", "platform"],
+      "properties": {
+        "local_id":     { "type": "integer", "minimum": 1, "description": "Origin site internal item ID (optional, should be stripped on cross-site import)" },
+        "title":        { "type": "string" },
+        "platform":     { "type": "string", "pattern": "^[A-Z0-9_]{2,16}$", "description": "Platform identifier. Same constraints as achievement.schema.json item_refs.platform." },
+        "release_date": { "type": "string", "format": "date" },
+        "maker":        { "type": "string" },
+        "external_ids": {
+          "type": "object",
+          "description": "Recommended keys: igdb_id, mobygames_id, wikidata_id, ra_game_id, steam_appid, xbox_title_id, psn_np_communication_id. Additional keys are allowed for future / vendor-specific IDs.",
+          "properties": {
+            "igdb_id":      { "type": "integer" },
+            "mobygames_id": { "type": "integer" },
+            "wikidata_id":  { "type": "string", "pattern": "^Q[0-9]+$" },
+            "ra_game_id":   { "type": "integer", "description": "RetroAchievements game ID" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "achieved_at": {
+      "type": "string",
+      "format": "date",
+      "description": "User-claimed achievement date (YYYY-MM-DD)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server-side record creation timestamp (when DB INSERT happened)"
+    },
+    "comment": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "proof_url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 500,
+      "description": "Proof video/image URL. Implementations should whitelist hosts."
+    }
+  },
+  "additionalProperties": false
+}
