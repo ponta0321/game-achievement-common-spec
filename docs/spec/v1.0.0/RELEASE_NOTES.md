@@ -55,12 +55,11 @@ THE CREW (Ubisoft, 2024 サービス終了) のように運営の判断ひとつ
 
 [README §9.5 Quick Start](docs/spec/v1.0.0/README.md#95-quick-start) に validate コマンドと擬似コードがあります。
 
-### 公開実装ロードマップ
+### 公開後
 
-- 2026-07 ~ 2026-09: reference 実装 ([gamesoft-navi.com](https://gamesoft-navi.com/)) で Basic MVP
-- 2026-10 ~ 2026-12: Connected 対応
-- 2027-Q2: Verified 対応
-- 2027-Q2 以降: コミュニティフィードバックで v1.1.0 検討
+- reference 実装 ([gamesoft-navi.com](https://gamesoft-navi.com/)) の対応状況は GitHub Discussions で随時公開
+- コミュニティからのフィードバックを受けて v1.1.0 / v2.0.0 を将来検討
+- v1.x 系では破壊的変更を行わない
 
 ### 開発の進め方
 

@@ -998,7 +998,7 @@ SemVer 厳守:
 - **MINOR** — 後方互換な追加 (任意フィールド追加 / enum 値追加)
 - **PATCH** — 文言・例の修正のみ
 
-**v1.0.0 凍結後、v1.x 系では絶対に破壊的変更しない**。「凍結 (freeze)」とは §16 ロードマップに記載の凍結時点 (2026-12 目標) を指す。それ以前の draft 期間 (現在) は破壊的変更を行う場合がある。GitHub への公開 (2026-06) は draft 期間の始点に過ぎない。
+**v1.0.0 凍結後、v1.x 系では絶対に破壊的変更しない**。v1.0.0 は 2026-06-26 に GitHub Release として凍結公開された。以降の修正は MINOR (任意フィールド追加 / enum 値追加) または PATCH (文言修正のみ) として行う。
 
 **前方互換ポリシー (v1.0.0 実装者の義務):**
 - v1.0.0 schema で validate しつつ、`schema_version` が `1.x` であれば受理する
@@ -1047,12 +1047,8 @@ SemVer 厳守:
 
 ## 14. 参照実装
 
-- ゲームソフトナビ (https://gamesoft-navi.com/) — 開発元・最初の実装
-  - **現在のステータス**: 通常のゲーム情報サイトとして稼働中。本仕様準拠の実績機能は **2026-07 から実装開始予定** (§16 ロードマップ参照)
-  - **Basic 適合**: 2026-09 頃公開予定
-  - **Connected 適合**: 2026-12 頃公開予定
-  - **Verified 適合**: 2027-Q2 頃公開予定
-  - 公開状況・連携状況は [リポジトリの Discussions](https://github.com/ponta0321/game-achievement-common-spec/discussions) で随時公開予定
+- ゲームソフトナビ (https://gamesoft-navi.com/) — 本仕様の reference 実装予定サイト
+  - 公開状況・連携状況・適合性レベルは [リポジトリの Discussions](https://github.com/ponta0321/game-achievement-common-spec/discussions) (有効化後) で随時公開する
 
 ---
 
@@ -1068,16 +1064,12 @@ SemVer 厳守:
 
 | 時期 | マイルストーン |
 |---|---|
-| 2026-06 | 仕様 v1.0.0-draft GitHub 公開 (Data + Transport + Trust 3 層) |
-| 2026-07 ~ 2026-09 | reference 実装 ([gamesoft-navi.com](https://gamesoft-navi.com/)) で **Basic (Data spec)** の MVP 運用、実データで検証 |
-| 2026-10 ~ 2026-12 | reference 実装で **Connected (Transport spec)** 対応、他サイトとの相互運用検証 |
-| 2026-12 (目標) | Data + Transport spec を **v1.0.0 として凍結** |
-| 2027-Q1 ~ Q2 | reference 実装で **Verified (Trust spec)** 対応、JWT 署名 + 鍵ローテーション運用検証 |
-| 2027-Q2 (目標) | Trust spec を **v1.0.0 として凍結** |
-| 凍結後 | コミュニティからの提案で v1.1.0 (後方互換追加) / v2.0.0 (破壊的) を検討 |
+| 2026-06-26 | 仕様 v1.0.0 公開 (Data + Transport + Trust 3 層) |
+| 公開後 | reference 実装、コミュニティからのフィードバック、相互運用検証 |
+| 将来 | v1.1.0 (後方互換追加) / v2.0.0 (破壊的) をコミュニティ提案で検討 |
 
-**現在のステータス**: 全 3 spec とも v1.0.0-draft。凍結前のため破壊的変更が起こりうる。本仕様で実装する場合は CHANGELOG を購読すること。
+**現在のステータス**: v1.0.0 として凍結。v1.x 系で破壊的変更は行わない (前方互換ポリシーは §11)。
 
 Basic だけを実装する場合は Data spec のみ追えば十分。Connected / Verified を目指す場合は Transport / Trust spec も併せて確認すること。
 
-**注**: Verified の reference 実装が Connected より遅れるのは、JWT 署名 / JWKS 公開 / 鍵ローテーションの運用検証に最低 3 ヶ月程度を要するため。Trust spec 自体は 2026-12 と同時に v1.0.0-rc として安定化を目指す。
+**reference 実装の状況**: 本仕様の reference 実装 ([gamesoft-navi.com](https://gamesoft-navi.com/)) の対応状況は、随時 [GitHub Discussions](https://github.com/ponta0321/game-achievement-common-spec/discussions) (有効化後) で公開する。
