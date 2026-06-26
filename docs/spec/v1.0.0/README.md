@@ -497,6 +497,8 @@ function are_equivalent(ach1, ach2):
 
 ### 8.3 サイト消滅時の救済
 
+#### 8.3.1 基本フロー
+
 ```
 [サイト A] 終了告知 (例: 6ヶ月前)
   → 全ユーザーに export 推奨 (Basic ファイル) または
@@ -504,6 +506,41 @@ function are_equivalent(ach1, ach2):
   → ユーザーは複数の代替サイトへ import
   → record_uid + handle で重複検知可能
 ```
+
+#### 8.3.2 複数代替サイトへの分散 import
+
+a さんが安全のため B 社・C 社の両方に同じ A 社 export を import した場合:
+
+- 両サイトとも `record_uid = "a-corp.com:uach:42"` を保持
+- 同一サイト内では重複検知でスキップされるが、別サイト同士で独立保持
+- 後日 B 社が C 社のデータを受け入れた場合、record_uid 重複検知で同一 record として扱われる
+
+#### 8.3.3 A 社発行 Achievement uid の継続使用
+
+A 社終了後も、B 社・C 社の DB に **仮 Achievement (§9.5.2)** として `a-corp.com:ach:1234` が残る。これらは:
+
+- **継続使用可能**: 新規の UserAchievement で `achievement_uid = "a-corp.com:ach:1234"` を参照してよい
+- **A 社の DNS が消えても uid は文字列としては有効**: B 社・C 社の DB 内で識別子として機能
+- **将来 B 社が同等の独自 Achievement を作成した場合**: B 社運営判断で aliases に追加し統合 (§7.6.2)
+
+#### 8.3.4 取り込み後のユーザー編集の扱い (重要)
+
+a さんが B 社で取り込んだ後にコメント等を編集した場合:
+
+- **推奨**: B 社が編集版を **新 record_uid で再発行** (`"b-corp.com:uach:99"` 等)、元 record_uid と aliases 的に紐付け
+- **代替**: 元 record_uid (`"a-corp.com:uach:42"`) のまま編集を保持 → C 社等へ再 export 時は B 社編集版が伝播
+- どちらを採用するかは実装サイトの方針 (本仕様では強制しない)
+
+将来 B 社・C 社で同一 a さんのデータを統合する際、record_uid が同じで内容が違う場合の競合は **`created_at` 最新版を優先**、または運営審査で個別判断する。
+
+#### 8.3.5 完全自己完結性の確認
+
+A 社が完全消滅 (DNS も jwks も失効) しても、B 社・C 社で a さんのデータは:
+
+- ✅ 表示可能 (`achievement_snapshot.primary_lang` + i18n マップで言語対応、thumbnail で画像表示)
+- ✅ 識別可能 (`achievement_uid` は文字列として機能)
+- ⚠️ Trust spec の JWS 検証は **失敗** (A 社の jwks_uri が消えるため) — 過去 approved 済み record は維持、新規取り込みは pending 扱い
+- ✅ B 社・C 社間で連携可能 (両者が record_uid + i18n で機械的に同一性判定)
 
 ### 8.4 取り込みコンテキストとユーザー紐付け (重要・実装の盲点)
 
