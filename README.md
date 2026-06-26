@@ -25,7 +25,8 @@ THE CREW (Ubisoft, 2024 サービス終了) のように、運営の判断ひと
 - [achievement.schema.json](docs/spec/v1.0.0/achievement.schema.json) — 実績定義スキーマ
 - [user_achievement.schema.json](docs/spec/v1.0.0/user_achievement.schema.json) — ユーザー達成記録スキーマ
 - [export.schema.json](docs/spec/v1.0.0/export.schema.json) — エクスポート JSON エンベロープスキーマ
-- [examples/](docs/spec/v1.0.0/examples/) — サンプルデータ
+- [export-ndjson-meta.schema.json](docs/spec/v1.0.0/export-ndjson-meta.schema.json) — NDJSON 形式のメタデータ行 (大規模 export 向け)
+- [examples/](docs/spec/v1.0.0/examples/) — サンプルデータ (JSON + NDJSON)
 
 ### Layer 2: Transport (任意・Connected 以上)
 - [transport.md](docs/spec/v1.0.0/transport.md) — OAuth 2 サーバー間直接通信仕様
