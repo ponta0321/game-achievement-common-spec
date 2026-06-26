@@ -2,7 +2,32 @@
 
 本仕様は SemVer に準拠します。v1.x 系で破壊的変更を行いません。
 
-## [Unreleased / 1.0.0-draft] — 2026-06-26 (改竄耐性をコア原則から削除)
+## [Unreleased / 1.0.0-draft] — 2026-06-26 (Transport / Trust spec 任意拡張を追加)
+
+### Added
+- **3 層構成 (Data / Transport / Trust) を導入**
+  - Layer 1 (Data) は今までと同じ JSON Schema 仕様 (Basic 適合)
+  - Layer 2 (Transport) で OAuth 2 サーバー間直接通信 (Connected 適合)
+  - Layer 3 (Trust) で JWT 署名による真正性証明 (Verified 適合)
+- **transport.md** — OAuth 2.0 Authorization Code Flow + PKCE / REST エンドポイント / Capability discovery / レート制限 / RFC 7807 エラーフォーマット
+- **trust.md** — JWS (RFC 7515) / JWKS (RFC 7517) / 推奨アルゴリズム ES256 / EdDSA / 鍵ローテーション / 検証フロー
+- **conformance.md** — Basic / Connected / Verified の宣言・相互運用マトリクス・取り込み判定フロー
+- **examples/well-known.example.json** — `/.well-known/achievement-spec` のサンプル
+- **README §3.1 で 3 層構成の関係図を追加**
+- **README「責務外」セクションで Transport / Trust spec による補完を明示**
+
+### Rationale
+- 「改竄耐性」をコア原則から削除した結果、企業採用の真正性要件に応えられなくなった
+- ユーザー介入を排除した OAuth 2 + JWT 署名通信なら本当に機械的真正性が成立する
+- 個人開発者の参加障壁を上げないため、Transport / Trust は **任意拡張** とし Basic 適合は Data spec のみで十分
+- Verified サイトでも Basic サイトとは JSON ファイル経由で相互運用可能 (フォールバック)
+
+### Notes
+- Data / Transport / Trust の 3 spec は独立してバージョニング
+- 既存の Basic 実装は v1.x 系で必須要件が増えないことを保証
+- Transport / Trust は CC0、誰でも実装可能
+
+
 
 ### Changed (破壊的、ドラフト段階のため許容)
 - **コア原則から「改竄耐性」を削除** (6 原則 → 5 原則)

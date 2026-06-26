@@ -18,11 +18,23 @@ THE CREW (Ubisoft, 2024 サービス終了) のように、運営の判断ひと
 
 最新版: [docs/spec/v1.0.0/](docs/spec/v1.0.0/)
 
+本仕様は **3 層構成** (Data / Transport / Trust)。個人開発者は Data だけで完結、企業は 3 層すべてで真正性保証を得られる。
+
+### Layer 1: Data (必須)
 - [README](docs/spec/v1.0.0/README.md) — 仕様概要・哲学・全体像
 - [achievement.schema.json](docs/spec/v1.0.0/achievement.schema.json) — 実績定義スキーマ
 - [user_achievement.schema.json](docs/spec/v1.0.0/user_achievement.schema.json) — ユーザー達成記録スキーマ
 - [export.schema.json](docs/spec/v1.0.0/export.schema.json) — エクスポート JSON エンベロープスキーマ
 - [examples/](docs/spec/v1.0.0/examples/) — サンプルデータ
+
+### Layer 2: Transport (任意・Connected 以上)
+- [transport.md](docs/spec/v1.0.0/transport.md) — OAuth 2 サーバー間直接通信仕様
+
+### Layer 3: Trust (任意・Verified)
+- [trust.md](docs/spec/v1.0.0/trust.md) — JWT 署名による真正性証明仕様
+
+### 全体
+- [conformance.md](docs/spec/v1.0.0/conformance.md) — Basic / Connected / Verified の宣言と相互運用
 - [CHANGELOG](docs/spec/v1.0.0/CHANGELOG.md)
 - [CONTRIBUTING](docs/spec/v1.0.0/CONTRIBUTING.md)
 
