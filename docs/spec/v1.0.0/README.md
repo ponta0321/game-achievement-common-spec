@@ -197,6 +197,70 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 
 ---
 
+## 7.5 Internationalization (多言語対応)
+
+本仕様は世界中での利用を想定するため、テキストフィールド (title / description / item_refs.title / item_refs.maker) に **言語識別子と並列翻訳マップ** を持つ。設計は ActivityPub の `nameMap` パターンに準じる。
+
+### 7.5.1 構造
+
+```json
+{
+  "primary_lang": "ja",
+  "title": "ナイツオブザラウンド入手",
+  "title_i18n": {
+    "en": "Got Knights of the Round",
+    "zh-Hant": "獲得圓桌騎士"
+  },
+  "description": "ヒュージマテリアを全て集めて...",
+  "description_i18n": {
+    "en": "Collect all huge materia and..."
+  },
+  "item_refs": {
+    "title": "ファイナルファンタジーVII",
+    "title_i18n": { "en": "Final Fantasy VII" },
+    "maker": "スクウェア",
+    "maker_i18n": { "en": "Square" }
+  }
+}
+```
+
+### 7.5.2 ルール
+
+- **`primary_lang` は必須** (BCP 47 タグ)。`title` / `description` 等のフリーテキストは `primary_lang` で書く
+- **`*_i18n` マップは任意・追加翻訳のみ**。`primary_lang` の値を i18n マップに重複させない (DRY)
+- キーは BCP 47 タグ (`ja`, `en`, `en-US`, `zh-Hant`, `zh-Hans`, `pt-BR`, `es-419` 等)
+- 値が無い言語はキーごと省略する (null 不可)
+- attribution / created_by / comment はユーザー記入物なので翻訳しない (`comment_lang` で言語明示のみ)
+
+### 7.5.3 表示側 (取り込みサイト) のルール
+
+```pseudo
+function display_title(achievement, user_lang):
+    # 1. ユーザー言語と完全一致
+    if achievement.title_i18n[user_lang] exists:
+        return (achievement.title_i18n[user_lang], user_lang)
+
+    # 2. 言語サブタグだけ一致 (en-US ユーザーに en を表示)
+    base = user_lang.split("-")[0]
+    for tag, value in achievement.title_i18n:
+        if tag.startswith(base):
+            return (value, tag)
+
+    # 3. primary_lang にフォールバック
+    return (achievement.title, achievement.primary_lang)
+```
+
+表示時は HTML で `<span lang="...">` を必ず付与し、スクリーンリーダー・自動翻訳が言語を認識できるようにする。
+
+### 7.5.4 識別との関係
+
+テキストは識別子ではなく **表示用**。同一性判定は引き続き `achievement_uid` + thumbnail sha256 (§7.3) で行う。同じ `achievement_uid` を持つレコードが言語違いの title を持っていても、それは「翻訳の追加」として扱う (実績の同一性は変わらない)。
+
+### 7.5.5 v1.0 で意図的に入れないもの
+
+- **`alternates` 配列 / `locale_variants` 等の重厚な国際化** — 達成条件 (conditions) は言語非依存なので、locale 別レコードを増やす必要はない
+- **逆引きインデックス** — 「英語ユーザーが英語タイトルで検索したい」は実装側の検索インフラの責務であり、データ仕様の責務ではない
+
 ## 8. 相互運用フロー (想定ユースケース)
 
 ### 8.1 ユーザーが自分のデータをエクスポート
@@ -352,9 +416,10 @@ function export_for_user(user):
 
 - Achievement: `schema_version` を `"1.0.0"` 固定で付与
 - `uid` / `record_uid` をグローバル一意に発行
+- `primary_lang` を BCP 47 タグで明示 (§7.5)
 - `item_refs.title` と `item_refs.platform` は最低限埋める
-- Achievement の `license` を明示 (`CC-BY-SA-4.0` 推奨)
-- UserAchievement の `achievement_snapshot` を可能な限り埋める (取込み先サイトの表示品質に直結)
+- Achievement の `license` を明示 (`CC0-1.0` 推奨)
+- UserAchievement の `achievement_snapshot` を可能な限り埋める (取込み先サイトの表示品質に直結、i18n マップ含む)
 
 ### 10.1.1 platform 識別子
 

@@ -24,10 +24,26 @@
     },
     "achievement_snapshot": {
       "type": ["object", "null"],
-      "description": "Snapshot of the target Achievement at the time of recording. Enables import sites to display title/thumbnail without needing the original Achievement record.",
+      "description": "Snapshot of the target Achievement at the time of recording. Enables import sites to display title/thumbnail without needing the original Achievement record. Includes i18n maps so cross-language display works without fetching the source Achievement.",
       "properties": {
-        "title": { "type": "string" },
+        "title": { "type": "string", "description": "Title in the snapshot's primary language." },
+        "title_i18n": {
+          "type": "object",
+          "description": "Optional translations of `title`. Keys are BCP 47 language tags.",
+          "patternProperties": {
+            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string", "maxLength": 80 }
+          },
+          "additionalProperties": false
+        },
         "description": { "type": ["string", "null"] },
+        "description_i18n": {
+          "type": "object",
+          "description": "Optional translations of `description`. Keys are BCP 47 language tags.",
+          "patternProperties": {
+            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string", "maxLength": 600 }
+          },
+          "additionalProperties": false
+        },
         "thumbnail": {
           "type": ["object", "null"],
           "description": "data_uri only. Identity is verified by sha256 of binary content, not by preset_id.",
@@ -51,9 +67,25 @@
       "properties": {
         "local_id":     { "type": "integer", "minimum": 1, "description": "Origin site internal item ID (optional, should be stripped on cross-site import)" },
         "title":        { "type": "string" },
+        "title_i18n": {
+          "type": "object",
+          "description": "Optional translations of the game title. Keys are BCP 47 tags.",
+          "patternProperties": {
+            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
         "platform":     { "type": "string", "pattern": "^[A-Z0-9_]{2,16}$", "description": "Platform identifier. Same constraints as achievement.schema.json item_refs.platform." },
         "release_date": { "type": "string", "format": "date" },
         "maker":        { "type": "string" },
+        "maker_i18n": {
+          "type": "object",
+          "description": "Optional translations of the maker name. Keys are BCP 47 tags.",
+          "patternProperties": {
+            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
         "external_ids": {
           "type": "object",
           "description": "Recommended keys: igdb_id, mobygames_id, wikidata_id, ra_game_id, steam_appid, xbox_title_id, psn_np_communication_id. Additional keys are allowed for future / vendor-specific IDs.",
@@ -80,7 +112,13 @@
     },
     "comment": {
       "type": "string",
-      "maxLength": 400
+      "maxLength": 400,
+      "description": "Free-form user comment in the language indicated by `comment_lang`."
+    },
+    "comment_lang": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$",
+      "description": "BCP 47 language tag for `comment`. Optional but recommended for cross-site display (e.g. <span lang=\"...\">)."
     },
     "proof_url": {
       "type": "string",

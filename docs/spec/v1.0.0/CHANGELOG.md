@@ -2,6 +2,27 @@
 
 本仕様は SemVer に準拠します。v1.x 系で破壊的変更を行いません。
 
+## [Unreleased / 1.0.0-draft] — 2026-06-26 (多言語対応 / Internationalization)
+
+### Added (破壊的、ドラフト段階のため許容: primary_lang を required に)
+- **Achievement に `primary_lang` (BCP 47 タグ) を required で追加**
+  - 「世界中での利用」を前提とする仕様で title/description の言語が不明だった根本的欠陥を解消
+  - 値例: `ja`, `en`, `en-US`, `zh-Hant`, `zh-Hans`, `pt-BR`, `es-419`
+- **Achievement に `title_i18n` / `description_i18n` 追加** (任意マップ)
+- **Achievement.item_refs に `title_i18n` / `maker_i18n` 追加** (任意マップ)
+  - 「ファイナルファンタジーVII」⇔「Final Fantasy VII」を同一作品として扱える
+- **UserAchievement.achievement_snapshot に `title_i18n` / `description_i18n` 追加**
+  - スナップショットだけで多言語表示可能 (§1 自己完結性の強化)
+- **UserAchievement.item_refs に `title_i18n` / `maker_i18n` 追加**
+- **UserAchievement に `comment_lang` 追加** (任意、ユーザーコメントの言語を BCP 47 で明示)
+- **README §7.5 Internationalization** 全面新設 (構造・ルール・表示側ガイド・識別との関係)
+
+### Rationale
+- ActivityPub の `nameMap` パターンに準じた並列マップ設計
+- 既存フィールド (`title` 等) は primary_lang での値として後方互換維持
+- 識別は引き続き achievement_uid + thumbnail sha256 で行い、テキストは表示用と明確化
+- v1.0 凍結後だと意味論の後付けでデータ汚染リスクが高いため、draft 段階で入れた
+
 ## [Unreleased / 1.0.0-draft] — 2026-06-26 (thumbnail 複数サイズ許容)
 
 ### Added

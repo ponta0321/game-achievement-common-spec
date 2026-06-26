@@ -2,19 +2,33 @@
   "schema_version": "1.0.0",
   "uid": "example.com:ach:1234",
   "source_site": "https://example.com/",
+  "primary_lang": "ja",
   "item_refs": {
     "local_id": 17602,
     "title": "ファイナルファンタジーVII",
+    "title_i18n": {
+      "en": "Final Fantasy VII",
+      "zh-Hant": "太空戰士VII"
+    },
     "platform": "PS",
     "release_date": "1997-01-31",
     "maker": "スクウェア",
+    "maker_i18n": {
+      "en": "Square"
+    },
     "external_ids": {
       "wikidata_id": "Q188819",
       "mobygames_id": 1394
     }
   },
   "title": "ナイツオブザラウンド入手",
+  "title_i18n": {
+    "en": "Got Knights of the Round"
+  },
   "description": "ヒュージマテリアを全て集めてナイツオブザラウンドを獲得する",
+  "description_i18n": {
+    "en": "Collect all huge materia and obtain the Knights of the Round summon"
+  },
   "category": "collection",
   "difficulty": 3,
   "conditions": [
