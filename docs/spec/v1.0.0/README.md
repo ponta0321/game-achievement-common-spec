@@ -4,6 +4,12 @@
 
 ---
 
+## 表記規約
+
+本ドキュメントでは「§N」(例: §7.5) はセクション番号への参照を意味する。GitHub Markdown 上ではクリック可能なジャンプリンクではない。読者は文書内検索で対応セクションを見つけること。
+
+---
+
 ## 1. 目的・哲学
 
 レトロゲームを含む全てのコンシューマゲームについて、**プレイヤーの達成記録 (アチーブメント)** を **特定企業・特定サイトに人質に取られない形** で共有可能にする。
@@ -86,7 +92,7 @@ docs/spec/v1.0.0/
 | **Transport** | [transport.md](transport.md) + transport-envelope.schema.json | — | ✅ | ✅ | OAuth 2 サーバー間直接通信 |
 | **Trust** | [trust.md](trust.md) | — | — | ✅ | JWT 署名による真正性証明 |
 
-詳細は [conformance.md](conformance.md) を参照。
+**累積関係**: Verified = Data + Transport + Trust の全てを実装。Trust だけを単独で実装する適合性はない (上層が下層を必ず内包)。詳細は [conformance.md](conformance.md) を参照。
 
 ---
 
@@ -648,6 +654,10 @@ SemVer 厳守:
 ## 14. 参照実装
 
 - ゲームソフトナビ (https://gamesoft-navi.com/) — 開発元・最初の実装
+  - **現在のステータス**: 通常のゲーム情報サイトとして稼働中。本仕様準拠の実績機能は **2026-07 から実装開始予定** (§16 ロードマップ参照)
+  - **Basic 適合**: 2026-09 頃公開予定
+  - **Connected 適合**: 2026-12 頃公開予定
+  - **Verified 適合**: 2027-Q2 頃公開予定
   - 公開状況・連携状況は [リポジトリの Discussions](https://github.com/ponta0321/game-achievement-common-spec/discussions) で随時公開予定
 
 ---
@@ -666,11 +676,14 @@ SemVer 厳守:
 |---|---|
 | 2026-06 | 仕様 v1.0.0-draft GitHub 公開 (Data + Transport + Trust 3 層) |
 | 2026-07 ~ 2026-09 | reference 実装 ([gamesoft-navi.com](https://gamesoft-navi.com/)) で **Basic (Data spec)** の MVP 運用、実データで検証 |
-| 2026-09 ~ 2026-11 | reference 実装で **Connected (Transport spec)** 対応、他サイトとの相互運用検証 |
-| 2026-11 ~ 2026-12 | reference 実装で **Verified (Trust spec)** 対応、JWT 署名運用検証 |
-| 2026-12 (目標) | フィードバックを反映し Data / Transport / Trust の各 spec を **v1.0.0 として凍結** |
-| v1.0.0 凍結後 | コミュニティからの提案で v1.1.0 (後方互換追加) / v2.0.0 (破壊的) を検討 |
+| 2026-10 ~ 2026-12 | reference 実装で **Connected (Transport spec)** 対応、他サイトとの相互運用検証 |
+| 2026-12 (目標) | Data + Transport spec を **v1.0.0 として凍結** |
+| 2027-Q1 ~ Q2 | reference 実装で **Verified (Trust spec)** 対応、JWT 署名 + 鍵ローテーション運用検証 |
+| 2027-Q2 (目標) | Trust spec を **v1.0.0 として凍結** |
+| 凍結後 | コミュニティからの提案で v1.1.0 (後方互換追加) / v2.0.0 (破壊的) を検討 |
 
 **現在のステータス**: 全 3 spec とも v1.0.0-draft。凍結前のため破壊的変更が起こりうる。本仕様で実装する場合は CHANGELOG を購読すること。
 
 Basic だけを実装する場合は Data spec のみ追えば十分。Connected / Verified を目指す場合は Transport / Trust spec も併せて確認すること。
+
+**注**: Verified の reference 実装が Connected より遅れるのは、JWT 署名 / JWKS 公開 / 鍵ローテーションの運用検証に最低 3 ヶ月程度を要するため。Trust spec 自体は 2026-12 と同時に v1.0.0-rc として安定化を目指す。

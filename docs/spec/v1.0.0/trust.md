@@ -123,7 +123,7 @@ OAuth 2 ベースの直接通信 (Transport spec) では `Authorization: Bearer`
 |---|---|---|
 | `iss` | ✅ | 発行サイト (= `site_url`) |
 | `iat` | ✅ | 署名時刻 (Unix epoch) |
-| `exp` | 🟡 | 有効期限 (推奨、最大 5 年) |
+| `exp` | 🟡 | 有効期限 (推奨)。本仕様での推奨上限は **5 年** (Code Signing 証明書の歴史的最大値、CA/Browser Forum BR の参考)。鍵漏洩時の影響範囲を抑制する目的。実装サイトはより短い期限を選んでよい |
 | `kind` | ✅ | `uach` / `ach` / `export` |
 | `data` | ✅ | Data spec 準拠 JSON オブジェクト |
 
@@ -240,7 +240,7 @@ Verified を宣言するサイトは以下を保証する:
 
 - **配置**: `/.well-known/achievement-spec` 内に `trust.jwks_archive_uri` フィールドで URL を示す (任意)
 - **形式**: 現行 `jwks.json` と同じ JWKS 形式 (`{ "keys": [ ... ] }`)
-- **保持期間**: 推奨 5 年 (`exp` の最大値と整合)
+- **保持期間**: 推奨 5 年 (`exp` 上限と整合し、Verified サイトの過去レコード検証が可能な期間)
 - **Cache-Control**: 推奨 `max-age=86400` (24 時間、変更頻度は低い)
 
 実装例:
