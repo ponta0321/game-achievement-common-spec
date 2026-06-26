@@ -29,6 +29,7 @@ THE CREW (Ubisoft, 2024 サービス終了) のように、運営の判断ひと
 
 ### Layer 2: Transport (任意・Connected 以上)
 - [transport.md](docs/spec/v1.0.0/transport.md) — OAuth 2 サーバー間直接通信仕様
+- [transport-envelope.schema.json](docs/spec/v1.0.0/transport-envelope.schema.json) — API レスポンス用エンベロープスキーマ
 
 ### Layer 3: Trust (任意・Verified)
 - [trust.md](docs/spec/v1.0.0/trust.md) — JWT 署名による真正性証明仕様

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ponta0321.github.io/game-achievement-common-spec/v1.0.0/transport-envelope.schema.json",
+  "title": "TransportEnvelope",
+  "description": "Game Achievement Common Spec v1.0.0 — Envelope for Transport spec API responses. Extends export.schema.json with pagination and Trust spec JWS support.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source_site",
+    "exported_at"
+  ],
+  "oneOf": [
+    {
+      "description": "Plain (Connected) response: user_achievements with full UserAchievement objects.",
+      "required": ["user_achievements"],
+      "properties": {
+        "user_achievements": {
+          "type": "array",
+          "items": { "$ref": "user_achievement.schema.json" }
+        }
+      },
+      "not": {
+        "required": ["user_achievements_jws"]
+      }
+    },
+    {
+      "description": "Signed (Verified) response: user_achievements_jws with JWS-wrapped UserAchievement objects (Trust spec §4.3).",
+      "required": ["user_achievements_jws"],
+      "properties": {
+        "user_achievements_jws": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
+            "description": "JWS Compact Serialization (header.payload.signature, base64url segments)."
+          }
+        }
+      },
+      "not": {
+        "required": ["user_achievements"]
+      }
+    }
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "source_site": {
+      "type": "string",
+      "format": "uri"
+    },
+    "exported_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "user_achievements": {
+      "type": "array",
+      "items": { "$ref": "user_achievement.schema.json" }
+    },
+    "user_achievements_jws": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
+      }
+    },
+    "pagination": {
+      "type": "object",
+      "description": "Pagination metadata for Transport spec API responses.",
+      "properties": {
+        "next_cursor": {
+          "type": ["string", "null"],
+          "description": "Opaque cursor for the next page. null if no more pages."
+        },
+        "has_more": {
+          "type": "boolean"
+        }
+      },
+      "required": ["has_more"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

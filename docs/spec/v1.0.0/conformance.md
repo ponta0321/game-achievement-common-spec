@@ -38,18 +38,20 @@
 
 ## 3. 相互運用マトリクス
 
-送信側 → 受信側 で使うべきプロトコル:
+送信側 → 受信側 で使うべきプロトコルとエンベロープ:
 
 | 送信 \ 受信 | Basic | Connected | Verified |
 |---|---|---|---|
-| **Basic** | JSON ファイル | JSON ファイル | JSON ファイル |
-| **Connected** | JSON ファイル (fallback) | OAuth 2 直接通信 | OAuth 2 直接通信 |
-| **Verified** | JSON ファイル (fallback、署名は破棄) | OAuth 2 + JWT 署名 (受信側は署名無視可) | OAuth 2 + JWT 署名検証 |
+| **Basic** | Data spec (export.schema.json) | Data spec ファイル import | Data spec ファイル import |
+| **Connected** | Data spec ファイル fallback | Transport envelope (user_achievements) | Transport envelope (user_achievements) |
+| **Verified** | Data spec ファイル fallback (署名は破棄) | Transport envelope (user_achievements_jws、受信側は署名無視可) | Transport envelope (user_achievements_jws、署名検証) |
 
 ポイント:
-- **Basic サイトは常に JSON ファイル経由でしか参加できない** — オフライン交換は仕様の前提
-- **Verified 同士の通信は JWS 署名検証通過 → approved 即時投入可**
-- **混在ペア (Connected ↔ Verified) は JWS は付くが受信側が無視する**
+- **Basic サイトは常に Data spec ファイル経由でしか参加できない** — オフライン交換は仕様の前提
+- **直接通信は transport-envelope.schema.json** を使い、Connected は `user_achievements`、Verified は `user_achievements_jws` フィールドを返す (oneOf)
+- **Verified 同士の通信は JWS 署名検証通過 → approved 即時投入可** (Transport spec §5.2)
+- **混在ペア (Connected ↔ Verified) は JWS は付くが受信側が無視 → pending**
+- **ファイル経由は常に pending** (Verified 自身からのファイル import でも署名は信頼しない、ユーザー介入の余地があるため)
 
 ---
 

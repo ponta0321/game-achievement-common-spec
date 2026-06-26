@@ -119,13 +119,15 @@ token 交換。
 - `limit` (任意, 1-1000, デフォルト 100)
 - `lang` (任意, BCP 47) — 表示用言語ヒント (i18n マップから抽出)
 
-レスポンス:
+レスポンスのスキーマは [transport-envelope.schema.json](transport-envelope.schema.json)。Connected サイトは `user_achievements` で UserAchievement オブジェクトを直接返し、Verified サイトは `user_achievements_jws` で JWS Compact 文字列を返す (両者は排他、oneOf)。
+
+Connected サイトのレスポンス例:
 ```json
 {
   "schema_version": "1.0.0",
   "source_site": "https://example.com/",
   "exported_at": "2026-06-26T12:00:00Z",
-  "user_achievements": [ /* ... */ ],
+  "user_achievements": [ /* UserAchievement[] */ ],
   "pagination": {
     "next_cursor": "opaque_token",
     "has_more": true
@@ -133,13 +135,24 @@ token 交換。
 }
 ```
 
-エンベロープは Data spec の export.schema.json と同一構造 + `pagination` キー追加。
+Verified サイトのレスポンス例:
+```json
+{
+  "schema_version": "1.0.0",
+  "source_site": "https://example.com/",
+  "exported_at": "2026-06-26T12:00:00Z",
+  "user_achievements_jws": [ "eyJhbGc...sig1", "eyJhbGc...sig2" ],
+  "pagination": { "next_cursor": null, "has_more": false }
+}
+```
+
+**Data spec の export.schema.json (ファイル交換用) とは別スキーマ** であることに注意。`pagination` と `user_achievements_jws` は Transport envelope 固有のフィールド。
 
 ### 5.2 `POST /api/v1/user_achievements`
 
 ユーザーの達成記録を受け取る (取り込み側エンドポイント、任意実装)。
 
-リクエストボディ: Data spec の export 形式と同一。
+リクエストボディ: `transport-envelope.schema.json` 形式 (Connected: `user_achievements`, Verified: `user_achievements_jws`)。
 
 レスポンス:
 ```json
@@ -151,7 +164,12 @@ token 交換。
 }
 ```
 
-すべての import は pending として受理し、運営審査後に approved にする (Data spec §10.4 と整合)。
+`status` フィールドの値:
+- `"approved"` — Verified サイトから JWS 付きで受信し、署名検証通過した場合 (機械的真正性 OK、即時投入)
+- `"pending"` — それ以外 (Connected サイトからの直接通信、JWS 検証失敗、ファイル経由 import 等)
+- `"rejected"` — schema 不整合、scope 不足、レート制限超過等
+
+取り込み判定の完全フローは conformance.md §4 参照。
 
 ### 5.3 `GET /api/v1/achievements/{uid}`
 

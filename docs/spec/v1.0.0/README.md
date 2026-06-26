@@ -60,9 +60,10 @@ docs/spec/v1.0.0/
 ├── LICENSE                            ← CC0-1.0 全文
 ├── CONTRIBUTING.md                    ← 仕様改訂の提案手順
 │
-├── achievement.schema.json            ← 達成項目スキーマ
-├── user_achievement.schema.json       ← ユーザー達成記録スキーマ
-├── export.schema.json                 ← エクスポート JSON エンベロープスキーマ
+├── achievement.schema.json            ← 達成項目スキーマ (Data spec)
+├── user_achievement.schema.json       ← ユーザー達成記録スキーマ (Data spec)
+├── export.schema.json                 ← ファイル交換用エンベロープ (Data spec)
+├── transport-envelope.schema.json     ← (任意) API レスポンス用エンベロープ (Transport spec)
 │
 ├── transport.md                       ← (任意) OAuth 2 サーバー間通信仕様
 ├── trust.md                           ← (任意) JWT 署名による真正性証明仕様
@@ -544,7 +545,7 @@ function export_for_user(user):
 5. **異常入力 (極端に長い文字列、不正な data_uri、未知 schema_version 等) は warning ログ + pending** — reject ではなく後で判断可能な状態に
 6. **UI で「取り込み元」「審査ステータス」を明示** — エンドユーザーが「他サイトから持ち込んだ未審査データ」だと識別できるように
 
-「機械的な真正性判定」を希望する実装サイトは、独自に「公式実績ハッシュレジストリ」や Ed25519 署名等を上位レイヤとして導入してよい (本仕様では規定しない)。
+「機械的な真正性判定」を希望する実装サイトは、任意拡張の **Trust spec** ([trust.md](trust.md)) を導入することで対応可能。OAuth 2 + JWT 署名により、ユーザー介入を排除した発行サイト真正性証明が成立する (Verified 適合)。
 
 ---
 

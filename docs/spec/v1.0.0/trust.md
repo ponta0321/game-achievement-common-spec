@@ -119,7 +119,9 @@ OAuth 2 ベースの直接通信 (Transport spec) では `Authorization: Bearer`
 
 ### 4.3 署名付き形式の輸送
 
-直接通信 (Transport spec) のレスポンスで返す場合:
+#### 直接通信 (Transport spec) のレスポンスで返す場合
+
+`transport-envelope.schema.json` を使用し、`user_achievements_jws` 配列で返す:
 
 ```json
 {
@@ -129,23 +131,25 @@ OAuth 2 ベースの直接通信 (Transport spec) では `Authorization: Bearer`
   "user_achievements_jws": [
     "eyJhbGc...sig1",
     "eyJhbGc...sig2"
-  ]
+  ],
+  "pagination": { "next_cursor": null, "has_more": false }
 }
 ```
 
-`user_achievements_jws` 配列の各要素が JWS 文字列。展開すると `payload.data` に UserAchievement が入っている。
+`user_achievements_jws` 配列の各要素が JWS 文字列 (Compact Serialization)。展開すると `payload.data` に UserAchievement が入っている。
 
-JSON ファイル (Data spec) として保存する場合は、`x-signature` 拡張フィールドに JWS をぶら下げる:
+**transport-envelope.schema.json は `user_achievements` と `user_achievements_jws` を排他**で扱う (oneOf)。Connected サイトは前者、Verified サイトは後者で返す。
 
-```json
-{
-  "record_uid": "example.com:uach:88012",
-  "...": "...",
-  "x-signature": "eyJhbGc...sig"
-}
-```
+#### JSON ファイル (Data spec) として保存する場合
 
-`x-signature` は Data spec の `additionalProperties: false` を回避するため `x-` prefix (慣習)。受信側は無視可能。
+Data spec の JSON Schema は `additionalProperties: false` で締めており、`x-signature` 等の独自フィールドを Data spec エンベロープに直接付加することは **できない**。
+
+Verified サイトが署名付きエクスポートをファイルとして保存する場合は、以下のいずれかを選ぶ:
+
+1. **Transport envelope 形式で保存**: `transport-envelope.schema.json` 準拠の JSON を `.json` ファイルに出力。Data spec の validator では検証できないが、Transport envelope validator で検証可
+2. **Data spec 準拠でエクスポート (署名なし)**: Verified サイト間でもファイル経由の場合は署名を破棄。Basic 互換性最優先のシナリオ向け
+
+詳細は conformance.md §3 の相互運用マトリクス参照。
 
 ---
 
@@ -190,7 +194,7 @@ Verified を宣言するサイトは以下を保証する:
 |---|---|
 | 全 UserAchievement / Achievement への署名 | 自サイトから外向きに返す全レコードに JWS を付与 |
 | OAuth 2 access_token も JWT 形式 | header に `alg`, `kid` を持ち、`/.well-known/jwks.json` の鍵で検証可 |
-| `.well-known/achievement-spec.trust.jwks_uri` を公開 | jwks.json の正規 URL |
+| `/.well-known/achievement-spec` 内に `trust.jwks_uri` を公開 | JSON 中の `trust.jwks_uri` フィールドで jwks.json の正規 URL を示す (Transport spec §7.1 参照) |
 | 鍵ローテーション履歴の保持 | 過去 5 年の `kid` と公開鍵を `jwks-archive.json` で公開推奨 (長期検証用) |
 
 ---
