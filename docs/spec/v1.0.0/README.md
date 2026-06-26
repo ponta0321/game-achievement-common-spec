@@ -151,23 +151,49 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 
 ## 7. Thumbnail 設計
 
-全サムネは **16×16 ピクセル統一**。表示時は CSS `image-rendering: pixelated` で 2x/4x/8x に拡大しドット感を保持。
+サムネは **16×16 ピクセルを reference (推奨基準)** とし、追加で 32/64/128/256/512 のいずれかの **複数サイズを任意で許容** する。表示サイドは利用可能な最大サイズを選んで描画する。16×16 のみ存在する場合は CSS `image-rendering: pixelated` で 2x/4x/8x に拡大しドット感を保持。
 
-### 7.1 構造
+### 7.1 設計の意図
+
+- **コアアイデンティティ**: 16×16 はレトロゲーム文化との親和性、ドット絵の手描きしやすさ、JSON サイズ予算の安定性を担保する reference サイズ
+- **アンチ独占の実効化**: Steam (256×256) / Xbox (1080×1080) / PSN / RetroAchievements (64×64) 等の既存サイトからアイコンを取り込む際に、**強制ダウンサンプリング不要**。元解像度を `thumbnails_extra` で保持できる
+- **自己完結性は 16×16 で担保**: UserAchievement の `achievement_snapshot.thumbnail` は **常に 16×16 reference のみ**。`thumbnails_extra` をスナップショットに含めない (JSON 肥大化防止、元 Achievement を辿ればよい)
+
+### 7.2 構造
 
 ```json
 "thumbnail": {
-  "data_uri": "data:image/png;base64,..."
-}
+  "data_uri": "data:image/png;base64,..."          // 16x16 reference (必須レベル推奨)
+},
+"thumbnails_extra": [                                // 任意・最大 5 件
+  { "size": 64,  "data_uri": "data:image/png;base64,..." },
+  { "size": 256, "data_uri": "data:image/png;base64,..." }
+]
 ```
 
 - `data_uri` のみ。`preset_id` / `kind` / `license` 等の派生情報は持たない
-- バイナリ識別子は **sha256(base64_decode(data 部))** で計算する
-- `maxLength` は 2000 文字 (≒ 1.4KB バイナリ) を推奨上限とする
+- `thumbnail.data_uri` の `maxLength` は 2000 文字 (≒ 1.4KB バイナリ)
+- `thumbnails_extra[].data_uri` の `maxLength` は 80000 文字 (≒ 55KB バイナリ)。合計ペイロードは ~200KB 以下に収めることを推奨
+- `size` は `[32, 64, 128, 256, 512]` のいずれか (正方形のみ)
+- 同一 size のエントリは複数持たない (実装側は最初のものを採用)
 
-### 7.2 識別の原則
+### 7.3 識別の原則 (重要)
 
-実装サイトが「同じサムネかどうか」を判定する際は、**sha256 バイナリ照合のみ** を使用する。`preset_id` 等の付帯情報による識別は禁止 (改竄可能なため)。
+実装サイトが「同じ実績のサムネかどうか」を判定する際は、**sha256 バイナリ照合** を使用する。判定の優先順位:
+
+1. **`thumbnail` (16×16 reference) の sha256 を最優先で照合** — 全実装が必ず持つため、最も信頼できる識別子
+2. `thumbnail` が無い (任意化されたケース) → `thumbnails_extra` のうち **最大 size のエントリの sha256** を使う
+3. `preset_id` 等の付帯情報による識別は禁止 (改竄可能なため)
+
+`thumbnails_extra` 同士は **size が違えば sha256 も異なる** ため照合に使えない (リサイズしただけで別ハッシュ)。あくまで表示用であり、識別は 16×16 reference に集約する設計とする。
+
+### 7.4 16×16 reference を省略してよいか
+
+「Achievement に大きいアイコンしか無い (Steam インポート等) ため 16×16 を作れない」ケースがある。
+
+- **推奨**: 実装サイトが取り込み時に **自動ダウンサンプリング** で 16×16 を生成し `thumbnail` に格納する
+- **許容**: `thumbnail` を null とし `thumbnails_extra` のみ持つ。ただし他サイトとの sha256 識別精度は落ちる
+- **禁止**: `thumbnails_extra` の中に「16」や「16×16 相当」を入れること (reference は `thumbnail` フィールドに統一)
 
 ---
 

@@ -2,6 +2,22 @@
 
 本仕様は SemVer に準拠します。v1.x 系で破壊的変更を行いません。
 
+## [Unreleased / 1.0.0-draft] — 2026-06-26 (thumbnail 複数サイズ許容)
+
+### Added
+- **Achievement に `thumbnails_extra` フィールド追加** — 32/64/128/256/512 の追加サムネを任意で持てる
+  - 各 entry に `size` + `data_uri` (max 80KB)、配列上限 5 件
+  - Steam (256x256) / Xbox (1080) / PSN / RetroAchievements (64) 等の既存サイトからのインポートで強制ダウンサンプリングが不要に
+- **README §7 全面改訂** — 16x16 reference + 複数サイズ許容の意図と運用ルールを明文化
+  - sha256 識別は 16x16 reference 優先、無ければ最大 size を使う
+  - `achievement_snapshot` には extras を含めない (JSON 肥大化防止)
+  - `thumbnails_extra` に 16x16 相当を入れることは禁止 (reference は `thumbnail` フィールドに統一)
+
+### Rationale
+- 16x16 固定はレトロゲーム文化との親和性は強いが、現代ゲーム (PS5/Xbox 等) からの取り込みで情報量不足
+- §1 「アンチ独占」「自己完結性」と整合させるには既存サイトのアイコン規格を受け入れる必要がある
+- 16x16 を reference (識別と最低保証表示) として残しつつ extras で拡張する両立設計を採用
+
 ## [Unreleased / 1.0.0-draft] — 2026-06-26 (P2 磨き)
 
 ### Changed (破壊的、ドラフト段階のため許容)
