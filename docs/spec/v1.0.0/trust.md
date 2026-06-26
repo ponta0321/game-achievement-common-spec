@@ -23,7 +23,8 @@ OAuth 2 ベースの直接通信 (Transport spec) では `Authorization: Bearer`
 - [RFC 7515](https://www.rfc-editor.org/rfc/rfc7515) JSON Web Signature (JWS)
 - [RFC 7517](https://www.rfc-editor.org/rfc/rfc7517) JSON Web Key (JWK / JWKS)
 - [RFC 7518](https://www.rfc-editor.org/rfc/rfc7518) JSON Web Algorithms (JWA)
-- [RFC 8414](https://www.rfc-editor.org/rfc/rfc8414) OAuth 2.0 Authorization Server Metadata
+
+将来 [RFC 8414](https://www.rfc-editor.org/rfc/rfc8414) OAuth 2.0 Authorization Server Metadata との整合 (well-known の形式統一) を検討する予定だが、v1.0 では本仕様独自の `/.well-known/achievement-spec` 形式 (Transport spec §7) を使用する。
 
 ---
 
