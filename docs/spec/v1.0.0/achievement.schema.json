@@ -230,6 +230,17 @@
     },
     "attribution": {
       "type": ["string", "null"]
+    },
+    "aliases": {
+      "type": "array",
+      "description": "Optional list of Achievement uids from other sites that this Achievement is declared to be equivalent to (same real-world achievement, different definition). Used for cross-site aggregation. The site that lists the aliases declares them; targets do not need to reciprocate. Verification of correctness is the responsibility of implementing sites (typically via moderation workflow).",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9.-]+:ach:[A-Za-z0-9_:-]+$"
+      },
+      "maxItems": 50,
+      "uniqueItems": true,
+      "default": []
     }
   },
   "additionalProperties": false

@@ -47,5 +47,8 @@
   "created_by": "alice",
   "created_at": "2026-06-25T10:00:00+09:00",
   "license": "CC0-1.0",
-  "attribution": "alice @ example.com"
+  "attribution": "alice @ example.com",
+  "aliases": [
+    "other-site.com:ach:9999"
+  ]
 }

@@ -312,6 +312,53 @@ function display_title(achievement, user_lang):
 - **`alternates` 配列 / `locale_variants` 等の重厚な国際化** — 達成条件 (conditions) は言語非依存なので、locale 別レコードを増やす必要はない
 - **逆引きインデックス** — 「英語ユーザーが英語タイトルで検索したい」は実装側の検索インフラの責務であり、データ仕様の責務ではない
 
+## 7.6 Achievement の同等性 (aliases)
+
+複数のサイトが「同じ達成行為」について独自に Achievement を定義することは正常な動作。本仕様は `uid` ベースで識別するため、A 社の `a-corp.com:ach:1234` と B 社の `b-corp.com:ach:5678` は **異なる Achievement** として扱われる。
+
+これは「アンチ独占」原則の帰結 (どこか一つに集約しない)。一方、サイトをまたいだ集計・統合のために `aliases` フィールドを任意で提供する。
+
+### 7.6.1 `aliases` フィールドの使い方
+
+Achievement に `aliases` (任意配列、最大 50 件) を持たせ、**同じ達成行為を指す他サイトの uid** を宣言できる:
+
+```json
+{
+  "uid": "b-corp.com:ach:5678",
+  "title": "Got Knights of the Round",
+  "aliases": [
+    "a-corp.com:ach:1234",
+    "retroachievements.org:ach:42"
+  ],
+  ...
+}
+```
+
+### 7.6.2 ルール
+
+- aliases は **片方向の宣言**。B 社が「a-corp 版・RA 版と同じ」と宣言すれば B 社内ではそう扱う。相手側 (A 社・RA) が逆方向の aliases を持つ必要はない
+- aliases は **取り込み時の自動判定には使わない**。実装サイトが運営審査で aliases を追加・編集する想定
+- 機械的同一性判定 (例: item_refs + conditions の自動マッチング) は **本仕様の責務外**。実装サイトが独自に判断してよいが、誤判定リスクと運営審査の必要性は実装者の責任
+
+### 7.6.3 取り込み時の挙動
+
+サイト A から取り込んだ UserAchievement (`achievement_uid = "a-corp.com:ach:1234"`) を B 社が受信:
+
+1. B 社が `b-corp.com:ach:5678` の aliases に `"a-corp.com:ach:1234"` を含んでいれば → **同じ Achievement と見なして集計可能** (達成者一覧に統合表示可能)
+2. aliases に含まれていなければ → 別 Achievement として扱う (a-corp 版を仮 Achievement として B 社 DB に保持、§9.5.2 import 擬似コード通り)
+3. 後日 B 社運営者が手動で aliases に追加すれば、過去の UserAchievement も統合表示の対象に
+
+### 7.6.4 集計の限界
+
+達成者数の世界集計 (例: 「FF7 ナイツオブザラウンドを達成した世界の人数」) は本仕様の責務外。各サイトが独自に集計し、aliases 経由で部分的に統合できるが、グローバル集計レジストリは v1.0 では提供しない。これは:
+
+- 各サイトの自律性を保つ (アンチ独占の徹底)
+- 集計レジストリ運営の事業判断を仕様に巻き込まない
+
+将来 v1.1 以降でコミュニティ運営の集計レジストリを検討する余地はあるが、v1.0 では規定しない。
+
+---
+
 ## 8. 相互運用フロー (想定ユースケース)
 
 3 層構成の組み合わせにより、相互運用には 2 つの経路がある:
