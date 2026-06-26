@@ -5,10 +5,18 @@
 GitHub Issues で受け付けます。テンプレート:
 
 ```
+### 対象 spec
+[ ] Data spec (achievement / user_achievement / export)
+[ ] Transport spec (OAuth 2 / REST)
+[ ] Trust spec (JWS / JWKS)
+[ ] Conformance (適合性レベル・相互運用)
+[ ] その他 (CHANGELOG / README / examples 等)
+
 ### 種類
 [ ] バグ (仕様の矛盾・誤記)
-[ ] 提案 (任意フィールド追加)
+[ ] 提案 (任意フィールド追加 / 新エンドポイント等)
 [ ] 破壊的変更提案 (v2.0.0 候補)
+[ ] 採用相談 / Q&A
 
 ### 内容
 (具体的に)
@@ -16,6 +24,7 @@ GitHub Issues で受け付けます。テンプレート:
 ### 影響範囲
 - 既存実装への影響
 - 既存データへの影響
+- 適合性レベルへの影響 (Basic / Connected / Verified)
 ```
 
 ## Pull Request

@@ -26,6 +26,7 @@
   },
   "trust": {
     "jwks_uri": "https://example.com/.well-known/jwks.json",
+    "jwks_archive_uri": "https://example.com/.well-known/jwks-archive.json",
     "issuer": "https://example.com/",
     "supported_algorithms": ["ES256", "EdDSA"]
   },

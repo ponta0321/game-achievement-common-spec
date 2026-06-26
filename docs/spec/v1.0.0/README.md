@@ -602,8 +602,7 @@ v1.0.0 公開後、v1.x 系では **絶対に破壊的変更しない**。
 ## 14. 参照実装
 
 - ゲームソフトナビ (https://gamesoft-navi.com/) — 開発元・最初の実装
-  - エクスポート: `/user_export.php`
-  - インポート設計: `private/spec/import.md` (非公開)
+  - 公開状況・連携状況は [リポジトリの Discussions](https://github.com/ponta0321/game-achievement-common-spec/discussions) で随時公開予定
 
 ---
 
@@ -619,9 +618,13 @@ v1.0.0 公開後、v1.x 系では **絶対に破壊的変更しない**。
 
 | 時期 | マイルストーン |
 |---|---|
-| 2026-06 | 仕様 v1.0.0-draft GitHub 公開 (本ドキュメント)、reference 実装着手 |
-| 2026-07 ~ 2026-12 | reference 実装 ([gamesoft-navi.com](https://gamesoft-navi.com/)) で MVP 運用、実データで検証 |
-| 2026-12 (目標) | フィードバックを反映し **v1.0.0 として凍結** |
+| 2026-06 | 仕様 v1.0.0-draft GitHub 公開 (Data + Transport + Trust 3 層) |
+| 2026-07 ~ 2026-09 | reference 実装 ([gamesoft-navi.com](https://gamesoft-navi.com/)) で **Basic (Data spec)** の MVP 運用、実データで検証 |
+| 2026-09 ~ 2026-11 | reference 実装で **Connected (Transport spec)** 対応、他サイトとの相互運用検証 |
+| 2026-11 ~ 2026-12 | reference 実装で **Verified (Trust spec)** 対応、JWT 署名運用検証 |
+| 2026-12 (目標) | フィードバックを反映し Data / Transport / Trust の各 spec を **v1.0.0 として凍結** |
 | v1.0.0 凍結後 | コミュニティからの提案で v1.1.0 (後方互換追加) / v2.0.0 (破壊的) を検討 |
 
-**現在のステータス**: v1.0.0-draft。凍結前のため破壊的変更が起こりうる。本仕様で実装する場合は CHANGELOG を購読すること。
+**現在のステータス**: 全 3 spec とも v1.0.0-draft。凍結前のため破壊的変更が起こりうる。本仕様で実装する場合は CHANGELOG を購読すること。
+
+Basic だけを実装する場合は Data spec のみ追えば十分。Connected / Verified を目指す場合は Transport / Trust spec も併せて確認すること。

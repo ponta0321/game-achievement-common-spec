@@ -195,7 +195,23 @@ Verified を宣言するサイトは以下を保証する:
 | 全 UserAchievement / Achievement への署名 | 自サイトから外向きに返す全レコードに JWS を付与 |
 | OAuth 2 access_token も JWT 形式 | header に `alg`, `kid` を持ち、`/.well-known/jwks.json` の鍵で検証可 |
 | `/.well-known/achievement-spec` 内に `trust.jwks_uri` を公開 | JSON 中の `trust.jwks_uri` フィールドで jwks.json の正規 URL を示す (Transport spec §7.1 参照) |
-| 鍵ローテーション履歴の保持 | 過去 5 年の `kid` と公開鍵を `jwks-archive.json` で公開推奨 (長期検証用) |
+
+### 6.1 鍵ローテーション履歴 (推奨)
+
+過去の `kid` と公開鍵を長期検証用に保持する場合の推奨形式:
+
+- **配置**: `/.well-known/achievement-spec` 内に `trust.jwks_archive_uri` フィールドで URL を示す (任意)
+- **形式**: 現行 `jwks.json` と同じ JWKS 形式 (`{ "keys": [ ... ] }`)
+- **保持期間**: 推奨 5 年 (`exp` の最大値と整合)
+- **Cache-Control**: 推奨 `max-age=86400` (24 時間、変更頻度は低い)
+
+実装例:
+```
+/.well-known/jwks.json          ← 現行鍵 (検証で使う)
+/.well-known/jwks-archive.json  ← 過去鍵 (長期検証で必要なときだけ取得)
+```
+
+このフィールドが無い場合、受信側は「現行 `jwks.json` で検証できない署名は無効」として扱う (`exp` 切れと同様)。
 
 ---
 
