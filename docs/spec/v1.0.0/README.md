@@ -306,19 +306,25 @@ function display_title(achievement, user_lang):
 
 ## 8. 相互運用フロー (想定ユースケース)
 
-### 8.1 ユーザーが自分のデータをエクスポート
+3 層構成の組み合わせにより、相互運用には 2 つの経路がある:
+
+- **ファイル経路 (Basic 適合で十分)**: ユーザーが手動で JSON をダウンロード → アップロード
+- **API 経路 (Connected / Verified)**: OAuth 2 でサーバー間直接通信
+
+### 8.1 ファイル経路 — ユーザーが自分のデータをエクスポート / 別サイトへ持ち込み
+
+#### 8.1.1 エクスポート (Basic)
 
 ```
-[サイト A] POST /user_export.php (handle + password)
-  → JSON ダウンロード
-  → user_achievement の配列 (本仕様準拠)
+[サイト A] ユーザーが /user_export 等を実行 (handle + password)
+  → export.schema.json 準拠 JSON をダウンロード
   → ユーザーがローカル保存
 ```
 
-### 8.2 別サイトへ持ち込み
+#### 8.1.2 別サイトへ持ち込み (Basic)
 
 ```
-[サイト B] POST /import (ファイルアップロード + handle + password)
+[サイト B] ユーザーが import 画面でファイルアップロード
   → schema_version 検証 (1.x 受理、未知フィールドは無視)
   → record_uid 重複検知 (既取込みはスキップ)
   → achievement_uid で識別 (§7.3)
@@ -331,11 +337,45 @@ function display_title(achievement, user_lang):
   → 取込み (pending → 運営審査 → approved)
 ```
 
+### 8.2 API 経路 — OAuth 2 でサーバー間直接通信
+
+#### 8.2.1 Connected ↔ Connected
+
+```
+[サイト B] ユーザーが「サイト A から取り込み」をクリック
+  → サイト A の /.well-known/achievement-spec を取得
+  → サイト A の OAuth 2 authorize エンドポイントへリダイレクト
+  → [サイト A] ユーザー同意 → code 発行
+  → [サイト B] code → access_token 交換
+  → [サイト B] GET /api/v1/user_achievements with Bearer token
+  → [サイト A] transport-envelope.schema.json で
+     user_achievements (UserAchievement[]) を返す
+  → [サイト B] pending で投入 (運営審査後 approved)
+```
+
+詳細は [transport.md §4](transport.md)。
+
+#### 8.2.2 Verified ↔ Verified — 機械的真正性あり
+
+```
+[サイト B] (8.2.1 と同様の OAuth 2 フロー)
+  → [サイト B] GET /api/v1/user_achievements with Bearer token
+  → [サイト A] transport-envelope.schema.json で
+     user_achievements_jws (JWS 配列) を返す
+  → [サイト B] サイト A の jwks.json を取得 → 各 JWS を署名検証
+  → 検証通過 + サイト B の auto_approve_verified=true
+    → approved 即時投入 (ユーザー介入の余地なし)
+  → 検証失敗 → reject + ログ
+```
+
+詳細は [trust.md §5](trust.md) と [conformance.md §4](conformance.md)。
+
 ### 8.3 サイト消滅時の救済
 
 ```
 [サイト A] 終了告知 (例: 6ヶ月前)
-  → 全ユーザーに export 推奨
+  → 全ユーザーに export 推奨 (Basic ファイル) または
+    他サイトへの API 経由データ転送を促す (Connected / Verified)
   → ユーザーは複数の代替サイトへ import
   → record_uid + handle で重複検知可能
 ```
@@ -475,9 +515,15 @@ function export_for_user(user):
 
 ---
 
-## 10. 実装ガイド (実装者向け)
+## 10. 実装ガイド (Data spec 実装者向け)
 
-### 10.1 必須
+本セクションは **Basic 適合 (Data spec のみ)** の実装ガイド。Connected / Verified を目指す場合は加えて以下を参照すること:
+
+- **Connected 適合の追加要件**: [transport.md §10](transport.md) (OAuth 2 server + REST エンドポイント + well-known)
+- **Verified 適合の追加要件**: [trust.md §6](trust.md) (JWT 署名 + JWKS 公開 + 鍵ローテーション)
+- **全適合性レベルの相互運用**: [conformance.md](conformance.md)
+
+### 10.1 必須 (Basic 適合)
 
 - Achievement: `schema_version` を `"1.0.0"` 固定で付与
 - `uid` / `record_uid` をグローバル一意に発行

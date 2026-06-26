@@ -20,11 +20,14 @@
         }
       },
       "not": {
-        "required": ["user_achievements_jws"]
+        "anyOf": [
+          { "required": ["user_achievements_jws"] },
+          { "required": ["bundle_jws"] }
+        ]
       }
     },
     {
-      "description": "Signed (Verified) response: user_achievements_jws with JWS-wrapped UserAchievement objects (Trust spec §4.3).",
+      "description": "Per-record signed (Verified) response: user_achievements_jws with JWS-wrapped UserAchievement objects (Trust spec §4.3).",
       "required": ["user_achievements_jws"],
       "properties": {
         "user_achievements_jws": {
@@ -32,12 +35,32 @@
           "items": {
             "type": "string",
             "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
-            "description": "JWS Compact Serialization (header.payload.signature, base64url segments)."
+            "description": "JWS Compact Serialization (header.payload.signature, base64url segments) wrapping a single UserAchievement."
           }
         }
       },
       "not": {
-        "required": ["user_achievements"]
+        "anyOf": [
+          { "required": ["user_achievements"] },
+          { "required": ["bundle_jws"] }
+        ]
+      }
+    },
+    {
+      "description": "Bundle-signed (Verified) response: bundle_jws wraps the entire export envelope as one JWS (Trust spec §4.3).",
+      "required": ["bundle_jws"],
+      "properties": {
+        "bundle_jws": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
+          "description": "JWS Compact Serialization wrapping the entire export (kind: 'export'). The payload.data contains a Data spec export.schema.json object."
+        }
+      },
+      "not": {
+        "anyOf": [
+          { "required": ["user_achievements"] },
+          { "required": ["user_achievements_jws"] }
+        ]
       }
     }
   ],
@@ -64,6 +87,10 @@
         "type": "string",
         "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
       }
+    },
+    "bundle_jws": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
     },
     "pagination": {
       "type": "object",
