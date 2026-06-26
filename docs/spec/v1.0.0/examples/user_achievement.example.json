@@ -2,6 +2,7 @@
   "record_uid": "example.com:uach:88012",
   "achievement_uid": "example.com:ach:1234",
   "achievement_snapshot": {
+    "primary_lang": "ja",
     "title": "ナイツオブザラウンド入手",
     "title_i18n": {
       "en": "Got Knights of the Round"

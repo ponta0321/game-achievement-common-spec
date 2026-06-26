@@ -62,8 +62,13 @@
     "achievement_snapshot": {
       "type": ["object", "null"],
       "description": "Snapshot of the target Achievement at the time of recording. Enables import sites to display title/thumbnail without needing the original Achievement record. Includes i18n maps so cross-language display works without fetching the source Achievement.",
+      "required": ["primary_lang", "title"],
       "properties": {
-        "title": { "type": "string", "description": "Title in the snapshot's primary language." },
+        "primary_lang": {
+          "$ref": "#/$defs/bcp47",
+          "description": "BCP 47 language tag of `title` and `description`. Required so importing sites can correctly set HTML lang attribute and tools can identify the language without fetching the source Achievement."
+        },
+        "title": { "type": "string", "description": "Title in `primary_lang`." },
         "title_i18n": {
           "$ref": "#/$defs/i18nMapTitle",
           "description": "Optional translations of `title`."

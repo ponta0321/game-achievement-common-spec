@@ -174,6 +174,7 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 
 ```json
 "achievement_snapshot": {
+  "primary_lang": "ja",
   "title": "ナイツオブザラウンド入手",
   "title_i18n": {
     "en": "Got Knights of the Round"
@@ -188,7 +189,8 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 }
 ```
 
-- `title` 必須 (snapshot 元の Achievement の primary_lang での値)
+- `primary_lang` 必須 (BCP 47)。snapshot の `title` / `description` の言語を明示。取り込み先で `<span lang="...">` の値や自動翻訳の言語識別に使う
+- `title` 必須 (`primary_lang` での値)
 - `title_i18n` / `description_i18n` 任意。snapshot だけで取り込み先サイトのユーザー言語で表示できるようにするための翻訳マップ
 - `description` 任意
 - `thumbnail.data_uri` 任意。あれば 16×16 PNG/WebP/GIF の base64 data URI
@@ -467,8 +469,28 @@ function import_export(file, current_user):
         # 3. achievement_uid で識別 (サムネは表示専用、同一性判定には使わない)
         ach_local = lookup_achievement(record.achievement_uid)
         if ach_local is None:
-            # 自サイトに無い → snapshot から仮 Achievement を生成 or pending 投入
-            ach_local = create_pending_from_snapshot(record.achievement_snapshot)
+            # 自サイトに無い → snapshot から仮 Achievement を生成 (pending status)
+            # 必要なフィールドは snapshot から、欠ける required は以下のように補う:
+            #   - schema_version: "1.0.0"
+            #   - uid: record.achievement_uid (受信側 namespace ではなく原本 uid を保持)
+            #   - primary_lang: snapshot.primary_lang (新規必須化、§6 参照)
+            #   - item_refs: record.item_refs (UserAchievement 側から借用)
+            #   - title: snapshot.title
+            #   - created_at: NOW (取り込み時刻)
+            #   - license: "CC0-1.0" (受信側のデフォルト、原本不明のため)
+            ach_local = create_pending_achievement(
+                uid          = record.achievement_uid,
+                primary_lang = record.achievement_snapshot.primary_lang,
+                item_refs    = record.item_refs,
+                title        = record.achievement_snapshot.title,
+                title_i18n   = record.achievement_snapshot.title_i18n,
+                description  = record.achievement_snapshot.description,
+                description_i18n = record.achievement_snapshot.description_i18n,
+                thumbnail    = record.achievement_snapshot.thumbnail,
+                created_at   = now(),
+                license      = "CC0-1.0",
+                source_pending = True,  # 後で原本サイトから取得して上書きする目印
+            )
 
         # 4. item_refs を自サイトの item に紐付け (i18n タイトルも考慮)
         item = match_item(record.item_refs.external_ids)
@@ -498,6 +520,7 @@ function export_for_user(user):
             record_uid:           ua.uid,
             achievement_uid:      ach.uid,
             achievement_snapshot: {
+                primary_lang:     ach.primary_lang,          # 言語識別子 (必須)
                 title:            ach.title,
                 title_i18n:       ach.title_i18n,            # 翻訳マップを丸ごと埋め込む
                 description:      ach.description,
