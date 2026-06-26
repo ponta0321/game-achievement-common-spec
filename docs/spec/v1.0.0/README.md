@@ -197,11 +197,11 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 
 実装サイトが「同じ実績のサムネかどうか」を判定する際は、**sha256 バイナリ照合** を使用する。判定の優先順位:
 
-1. **`thumbnail` (16×16 reference) の sha256 を最優先で照合** — 全実装が必ず持つため、最も信頼できる識別子
-2. `thumbnail` が無い (任意化されたケース) → `thumbnails_extra` のうち **最大 size のエントリの sha256** を使う
+1. **`thumbnail` (16×16 reference) の sha256 を最優先で照合** — 全実装が持つ「べき」reference サイズ。最も信頼できる識別子
+2. `thumbnail` が両側に無い (どちらかが省略) → `thumbnails_extra` のうち **両者が共通して持つ size のエントリの sha256** を順に試す (大きい size から)。共通 size が無ければマッチ不能
 3. `preset_id` 等の付帯情報による識別は禁止 (改竄可能なため)
 
-`thumbnails_extra` 同士は **size が違えば sha256 も異なる** ため照合に使えない (リサイズしただけで別ハッシュ)。あくまで表示用であり、識別は 16×16 reference に集約する設計とする。
+`thumbnails_extra` 同士は **size が違えば sha256 も異なる** (リサイズしただけで別ハッシュ)。マッチ不能を避けるため、§7.4 の「自動ダウンサンプリングで 16×16 reference を生成する」を強く推奨する。
 
 ### 7.4 16×16 reference を省略してよいか
 
@@ -243,8 +243,8 @@ UserAchievement は、他サイトに取り込まれたときに **元の Achiev
 ### 7.5.2 ルール
 
 - **`primary_lang` は必須** (BCP 47 タグ)。`title` / `description` 等のフリーテキストは `primary_lang` で書く
-- **`*_i18n` マップは任意・追加翻訳のみ**。`primary_lang` の値を i18n マップに重複させない (DRY)
-- キーは BCP 47 タグ (`ja`, `en`, `en-US`, `zh-Hant`, `zh-Hans`, `pt-BR`, `es-419` 等)
+- **`*_i18n` マップは任意・追加翻訳のみ**。`primary_lang` の値を i18n マップに重複させない (SHOULD NOT、DRY 原則)。重複していた場合は実装は `primary_lang` 側の値を優先する (i18n マップ側を無視) こと
+- キーは BCP 47 タグ (`ja`, `en`, `en-US`, `zh-Hant`, `zh-Hant-TW`, `zh-Hans`, `pt-BR`, `es-419`, `de-CH-1996` 等)
 - 値が無い言語はキーごと省略する (null 不可)
 - attribution / created_by / comment はユーザー記入物なので翻訳しない (`comment_lang` で言語明示のみ)
 
@@ -370,6 +370,11 @@ data   = json.load(open("docs/spec/v1.0.0/examples/achievement.example.json"))
 Draft202012Validator.check_schema(schema)
 validate(instance=data, schema=schema)
 ```
+
+**スキーマの URL について:**
+- スキーマ内の `$id` は `https://ponta0321.github.io/game-achievement-common-spec/v1.0.0/...` を指す (GitHub Pages 有効化後に解決可能)
+- 未解決でも validator はローカルファイルとして読めば動く (上の例)
+- ネットワーク経由で取得したい場合の raw URL: `https://raw.githubusercontent.com/ponta0321/game-achievement-common-spec/main/docs/spec/v1.0.0/achievement.schema.json`
 
 ### 9.5.2 取り込み (import) の最小擬似コード
 

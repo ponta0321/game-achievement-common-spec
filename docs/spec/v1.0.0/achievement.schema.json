@@ -3,6 +3,47 @@
   "$id": "https://ponta0321.github.io/game-achievement-common-spec/v1.0.0/achievement.schema.json",
   "title": "Achievement",
   "description": "Game Achievement Common Spec v1.0.0 — Achievement definition",
+  "$defs": {
+    "bcp47": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?(-[A-Za-z0-9]{5,8})?$",
+      "description": "BCP 47 language tag (simplified). Supports language, optional script (4 chars), optional region (2 alpha or 3 digit), optional single variant (5-8 chars). Examples: ja, en, en-US, zh-Hant, zh-Hant-TW, pt-BR, es-419, de-CH-1996. Grandfathered/private-use tags are not supported."
+    },
+    "i18nMapTitle": {
+      "type": "object",
+      "description": "Translation map keyed by BCP 47 language tags. Values are titles (2-80 chars).",
+      "patternProperties": {
+        "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?(-[A-Za-z0-9]{5,8})?$": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        }
+      },
+      "additionalProperties": false
+    },
+    "i18nMapText": {
+      "type": "object",
+      "description": "Translation map keyed by BCP 47 language tags. Values are short text (1+ chars, no upper bound here; field-specific maxLength applies).",
+      "patternProperties": {
+        "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?(-[A-Za-z0-9]{5,8})?$": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "i18nMapDescription": {
+      "type": "object",
+      "description": "Translation map keyed by BCP 47 language tags. Values are descriptions (up to 600 chars).",
+      "patternProperties": {
+        "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?(-[A-Za-z0-9]{5,8})?$": {
+          "type": "string",
+          "maxLength": 600
+        }
+      },
+      "additionalProperties": false
+    }
+  },
   "type": "object",
   "required": [
     "schema_version",
@@ -29,9 +70,8 @@
       "description": "Origin site URL (optional). Redundant with the namespace prefix of `uid`; included only when a richer URL than the bare domain is needed (e.g. https path with locale)."
     },
     "primary_lang": {
-      "type": "string",
-      "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$",
-      "description": "BCP 47 language tag identifying the language of `title`, `description`, `item_refs.title`, `item_refs.maker`. Examples: 'ja', 'en', 'en-US', 'zh-Hant', 'zh-Hans', 'pt-BR', 'es-419'. The `*_i18n` maps provide translations; entries should NOT duplicate the primary language (use `title` etc. for that)."
+      "$ref": "#/$defs/bcp47",
+      "description": "BCP 47 language tag identifying the language of `title`, `description`, `item_refs.title`, `item_refs.maker`. The `*_i18n` maps provide translations; entries SHOULD NOT duplicate the primary language."
     },
     "item_refs": {
       "type": "object",
@@ -47,12 +87,8 @@
           "description": "Game title in the parent Achievement's `primary_lang`. Translations go in `title_i18n`."
         },
         "title_i18n": {
-          "type": "object",
-          "description": "Optional translations of the game title (e.g. 'ファイナルファンタジーVII' vs 'Final Fantasy VII'). Keys are BCP 47 tags.",
-          "patternProperties": {
-            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string", "minLength": 1 }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/i18nMapText",
+          "description": "Optional translations of the game title (e.g. 'ファイナルファンタジーVII' vs 'Final Fantasy VII')."
         },
         "platform": {
           "type": "string",
@@ -68,12 +104,8 @@
           "description": "Maker / publisher in the parent Achievement's `primary_lang`. Translations go in `maker_i18n`."
         },
         "maker_i18n": {
-          "type": "object",
-          "description": "Optional translations of the maker name (e.g. 'スクウェア' vs 'Square'). Keys are BCP 47 tags.",
-          "patternProperties": {
-            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string" }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/i18nMapText",
+          "description": "Optional translations of the maker name (e.g. 'スクウェア' vs 'Square')."
         },
         "external_ids": {
           "type": "object",
@@ -96,16 +128,8 @@
       "description": "Achievement title in `primary_lang`. Translations go in `title_i18n`."
     },
     "title_i18n": {
-      "type": "object",
-      "description": "Optional translations of `title`. Keys are BCP 47 language tags (excluding `primary_lang`). Values are translated titles.",
-      "patternProperties": {
-        "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": {
-          "type": "string",
-          "minLength": 2,
-          "maxLength": 80
-        }
-      },
-      "additionalProperties": false
+      "$ref": "#/$defs/i18nMapTitle",
+      "description": "Optional translations of `title`. Keys SHOULD NOT include `primary_lang` (DRY)."
     },
     "description": {
       "type": ["string", "null"],
@@ -113,15 +137,8 @@
       "description": "Achievement description in `primary_lang`. Translations go in `description_i18n`."
     },
     "description_i18n": {
-      "type": "object",
-      "description": "Optional translations of `description`. Keys are BCP 47 language tags (excluding `primary_lang`).",
-      "patternProperties": {
-        "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": {
-          "type": "string",
-          "maxLength": 600
-        }
-      },
-      "additionalProperties": false
+      "$ref": "#/$defs/i18nMapDescription",
+      "description": "Optional translations of `description`. Keys SHOULD NOT include `primary_lang` (DRY)."
     },
     "category": {
       "type": ["string", "null"],

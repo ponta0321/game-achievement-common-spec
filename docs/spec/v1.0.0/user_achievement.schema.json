@@ -3,6 +3,43 @@
   "$id": "https://ponta0321.github.io/game-achievement-common-spec/v1.0.0/user_achievement.schema.json",
   "title": "UserAchievement",
   "description": "Game Achievement Common Spec v1.0.0 — User achievement record",
+  "$defs": {
+    "bcp47": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?(-[A-Za-z0-9]{5,8})?$"
+    },
+    "i18nMapTitle": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?(-[A-Za-z0-9]{5,8})?$": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        }
+      },
+      "additionalProperties": false
+    },
+    "i18nMapText": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?(-[A-Za-z0-9]{5,8})?$": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "i18nMapDescription": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?(-[A-Za-z0-9]{5,8})?$": {
+          "type": "string",
+          "maxLength": 600
+        }
+      },
+      "additionalProperties": false
+    }
+  },
   "type": "object",
   "required": [
     "record_uid",
@@ -28,21 +65,13 @@
       "properties": {
         "title": { "type": "string", "description": "Title in the snapshot's primary language." },
         "title_i18n": {
-          "type": "object",
-          "description": "Optional translations of `title`. Keys are BCP 47 language tags.",
-          "patternProperties": {
-            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string", "maxLength": 80 }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/i18nMapTitle",
+          "description": "Optional translations of `title`."
         },
         "description": { "type": ["string", "null"] },
         "description_i18n": {
-          "type": "object",
-          "description": "Optional translations of `description`. Keys are BCP 47 language tags.",
-          "patternProperties": {
-            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string", "maxLength": 600 }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/i18nMapDescription",
+          "description": "Optional translations of `description`."
         },
         "thumbnail": {
           "type": ["object", "null"],
@@ -68,23 +97,15 @@
         "local_id":     { "type": "integer", "minimum": 1, "description": "Origin site internal item ID (optional, should be stripped on cross-site import)" },
         "title":        { "type": "string" },
         "title_i18n": {
-          "type": "object",
-          "description": "Optional translations of the game title. Keys are BCP 47 tags.",
-          "patternProperties": {
-            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string", "minLength": 1 }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/i18nMapText",
+          "description": "Optional translations of the game title."
         },
         "platform":     { "type": "string", "pattern": "^[A-Z0-9_]{2,16}$", "description": "Platform identifier. Same constraints as achievement.schema.json item_refs.platform." },
         "release_date": { "type": "string", "format": "date" },
         "maker":        { "type": "string" },
         "maker_i18n": {
-          "type": "object",
-          "description": "Optional translations of the maker name. Keys are BCP 47 tags.",
-          "patternProperties": {
-            "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$": { "type": "string" }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/i18nMapText",
+          "description": "Optional translations of the maker name."
         },
         "external_ids": {
           "type": "object",
@@ -116,8 +137,7 @@
       "description": "Free-form user comment in the language indicated by `comment_lang`."
     },
     "comment_lang": {
-      "type": "string",
-      "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$",
+      "$ref": "#/$defs/bcp47",
       "description": "BCP 47 language tag for `comment`. Optional but recommended for cross-site display (e.g. <span lang=\"...\">)."
     },
     "proof_url": {
