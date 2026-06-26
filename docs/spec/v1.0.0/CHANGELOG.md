@@ -21,6 +21,33 @@
 - README §3.1 に 3 層構成の関係図
 - README §8 相互運用フローに API 経路 (Connected/Verified) を追加
 
+**NDJSON 形式 (大規模 export 向け)**
+- `export-ndjson-meta.schema.json` を新規追加 (NDJSON のメタデータ行)
+- `examples/export.example.ndjson` サンプル追加
+- ヘビーユーザー (10,000 件超) の export を実用化
+- ストリーミング処理可能、行単位 reject 可能
+
+**Achievement 同等性の仕組み**
+- `Achievement.aliases` (任意配列) — 他サイト Achievement uid を「同等」と手動宣言
+- `Achievement.external_ids` (任意オブジェクト) — Steam / PSN / Xbox / RA 等の公式 ID で機械的同一性判定
+  - 推奨キー 8 種: steam_achievement_api_name, xbox_achievement_id, psn_trophy_id, psn_trophy_group_id, ra_achievement_id, epic_achievement_id, gog_achievement_key, ubi_action_id
+- README §7.6 で aliases と external_ids の補完関係を明示
+
+**実装の盲点を仕様で明文化**
+- README §8.4 取り込みコンテキストとユーザー紐付け (7 サブセクション) — OAuth 2 セッション保持、state 埋め込み、profile fallback、取り込み後訂正、なりすまし対策
+- README §9.5.2 import 擬似コードに current_user の決定方法と仮 Achievement 生成の詳細
+- Trust spec §4.2 JWS payload シリアライズ規約 (再 serialize 禁止)
+- Trust spec §5 検証フロー 5' で iss と uid namespace の整合性検証を追加
+- Trust spec §5 検証フロー 4' で jwks-archive.json fallback を追加
+- Trust spec §3.3 鍵漏洩時の緊急ローテーション挙動を明示
+- Transport spec §5.4 GET /api/v1/profile エンドポイント仕様化
+- Transport spec §10.3 OAuth 2 client 登録の方向性 (手動 / RFC 7591)
+- README §10.3 エラーパス (バッチ単位 reject / レコード単位 skip / 受理+warning)
+
+**サイト消滅時の救済**
+- README §8.3 を 5 サブセクションに拡張
+  - 基本フロー / 複数サイト分散 / Achievement uid 継続使用 / ユーザー編集の扱い / 完全自己完結性
+
 **多言語対応 (Internationalization)**
 - Achievement に `primary_lang` (BCP 47 タグ) を required で追加
 - Achievement / item_refs に `title_i18n` / `description_i18n` / `maker_i18n` 追加
@@ -80,6 +107,10 @@
 - `data_uri` のみに簡素化 (`kind` / `preset_id` / `palette` / `license` / `attribution` / `alt` を撤去)
 - サムネは表示専用とし識別には使わない方針 (§7.3)
 
+**snapshot 自己完結性の強化**
+- UserAchievement.achievement_snapshot に primary_lang を required で追加
+- 取り込み先サイトが言語識別子なしで snapshot を表示できなかった問題を解消
+
 ### Removed (削除)
 - UserAchievement の `license` (Achievement に従う)
 - UserAchievement の `handle_name` (record_uid の namespace で発行元判明)
@@ -91,7 +122,8 @@
 - 個人メールアドレス連絡先 (`gamesoft.navi@gmail.com`)
 
 ### Notes
-- 本ドラフトは MVP 6ヶ月運用後 (2026-12 目標) に **v1.0.0 として凍結** する予定
+- 本ドラフトは Phase 1-7 の検証実験を経て凍結準備完了
+- 凍結タイミング: ユーザー判断による (公開実施時に `[Unreleased]` → `[1.0.0] - YYYY-MM-DD` に変更)
 - 凍結後は v1.x 系で破壊的変更を一切行わない
 - 凍結後の MINOR (v1.1.0+) は「任意フィールド追加」「enum 値追加」のみ
 - スキーマ URL の `$id` は GitHub Pages 有効化後に解決可能
